@@ -185,32 +185,35 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
         while (!SDLNet_UDP_Recv(socket, inputPacket) && serviceState.isRunning()) 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));     
 
-        const char *data_cStr = NULL;
-        memcpy(&ip, &inputPacket->address, sizeof(IPaddress));
-        memcpy(&data_cStr, &inputPacket->data, sizeof(inputPacket->data));
+        //don't process packet if state is no longer running.
+        if (serviceState.isRunning()) {
+            const char *data_cStr = NULL;
+            memcpy(&ip, &inputPacket->address, sizeof(IPaddress));
+            memcpy(&data_cStr, &inputPacket->data, sizeof(inputPacket->data));
 
-        //log request info
-        logRequest(threadNum, ip, data_cStr);
+            //log request info
+            logRequest(threadNum, ip, data_cStr);
 
-        CommandTransaction *requestTransaction = commandProcessor.buildTransaction(ip, data_cStr);
+            CommandTransaction *requestTransaction = commandProcessor.buildTransaction(ip, data_cStr);
    
-        //handle requests coming in
-        if (requestTransaction != NULL) {
-            if (requestTransaction->getCommandType() == CommandType::SHUTDOWN) {
-                log->write(Logger::LogLevel::INFO, "Thread=" 
-                        + std::to_string(threadNum) + " Received quit from client. Shutting down event polling.");
-                serviceState.setIsRunning(false);
-            } else {
-                log->write(Logger::LogLevel::INFO, "Thread=" 
-                            + std::to_string(threadNum) 
-                            + " Received request from client. Processing and returning info if needed");
+            //handle requests coming in
+            if (requestTransaction != NULL) {
+                if (requestTransaction->getCommandType() == CommandType::SHUTDOWN) {
+                    log->write(Logger::LogLevel::INFO, "Thread=" 
+                            + std::to_string(threadNum) + " Received quit from client. Shutting down event polling.");
+                    serviceState.setIsRunning(false);
+                } else {
+                    log->write(Logger::LogLevel::INFO, "Thread=" 
+                                + std::to_string(threadNum) 
+                                + " Received request from client. Processing and returning info if needed");
                     
-                CommandTransaction *respTrans = commandProcessor.executeCommand(requestTransaction);
-                if (respTrans != NULL) {
-                    sendResponse(respTrans);
-                }                  
-            }
-        }                  
+                    CommandTransaction *respTrans = commandProcessor.executeCommand(requestTransaction);
+                    if (respTrans != NULL) {
+                        sendResponse(respTrans);
+                    }                  
+                }
+            }  
+        }                
                 
     }
 }

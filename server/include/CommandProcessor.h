@@ -4,6 +4,8 @@
 #include <SDL/SDL_net.h>
 #include "CommandType.h"
 #include "CommandTransaction.h"
+#include "Logger.h"
+#include "GameState.h"
 
 class CommandProcessor {
 
@@ -11,6 +13,13 @@ class CommandProcessor {
         CommandProcessor();
         CommandTransaction* executeCommand(CommandTransaction *request);
         CommandTransaction* buildTransaction(IPaddress ip, const char *data);
+
+    private: 
+        CommandTransaction* processAddCommand(CommandTransaction *cmd);
+        CommandTransaction* processGetCommand(CommandTransaction *cmd);
+        CommandTransaction* processListCommand(CommandTransaction *cmd);
+        GameState gameState;       
+        Logger *log;
 };
 
 #endif

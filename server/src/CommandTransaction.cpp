@@ -24,7 +24,7 @@ std::string CommandTransaction::getFormattedResponse() {
 
     std::string respString = "";
 
-    respString += getCommandTypeString() + ">";
+    respString += getCommandTypeString() + "<";
 
     for (auto it = parameters.begin(); it != parameters.end(); ++it) {
         respString += "{" + it->first + "=" + it->second + "}";
@@ -43,7 +43,23 @@ std::string CommandTransaction::getCommandTypeString() {
 
     switch(commandType) {
         case CommandType::UPDATE:
-            response = "UPDATE";
+            response = "upd";
+            break;
+        
+        case CommandType::ADD:
+            response = "add";
+            break;
+
+        case CommandType::GET:
+            response = "get";
+            break;
+
+        case CommandType::INFO:
+            response = "info";
+            break;
+
+        case CommandType::LIST:
+            response = "list";
             break;
     }
 
