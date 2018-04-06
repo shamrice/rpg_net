@@ -34,7 +34,9 @@
 			"array": "cpp",
 			"functional": "cpp",
 			"tuple": "cpp",
-			"utility": "cpp"
+			"utility": "cpp",
+			"cmath": "cpp",
+			"thread": "cpp"
 		}
 	}
 }

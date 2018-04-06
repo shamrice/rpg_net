@@ -24,8 +24,12 @@ UdpNetworkService::~UdpNetworkService() {
         log->write(Logger::LogLevel::INFO, "Freeing UDP outbound packet.");
         SDLNet_FreePacket(packetOut);
         */
-        log->write(Logger::LogLevel::INFO, "Freeing UDP inbound packet");
-        SDLNet_FreePacket(packetIn);
+
+        log->write(Logger::LogLevel::INFO, "Freeing UDP inbound packet(s)");
+        for (auto it = inPackets.begin(); it != inPackets.end(); ++it) {
+            SDLNet_FreePacket(*it);
+        }
+
         log->write(Logger::LogLevel::INFO, "Exiting SDL_Net.");
         SDLNet_Quit();
         log->write(Logger::LogLevel::INFO, "Exiting SDL.");
@@ -68,13 +72,19 @@ bool UdpNetworkService::init() {
         exit(-1);        
     }
     log->write(Logger::LogLevel::INFO, "Outbound UDP packet allocated successfully.");
-    
-    if (!(packetIn = SDLNet_AllocPacket(1024))) {
-        log->write(Logger::LogLevel::ERROR, SDLNet_GetError());
-        exit(-1);        
+
+    //allocate runner thread input packets
+    for (int i = 0; i < configuration->getListenerThreadNum(); i++) {
+        UDPpacket *packet = SDLNet_AllocPacket(1024);
+        if (!packet) {
+            log->write(Logger::LogLevel::ERROR, SDLNet_GetError());
+            exit(-1); 
+        }
+        inPackets.push_back(packet);
+        log->write(Logger::LogLevel::INFO, "Inbound UDP packet for thread " 
+                            + std::to_string(i) + " allocated successfully.");
     }
-    log->write(Logger::LogLevel::INFO, "Inbound UDP packet allocated successfully.");
-   
+
     isInit = true;
     serviceState.setIsRunning(false);
     return true;
@@ -82,26 +92,17 @@ bool UdpNetworkService::init() {
 
 void UdpNetworkService::run() {
     if (isInit) {
-        log->write(Logger::LogLevel::INFO, "RPG Server Started. Type \"quit\" or \"exit\" to stop.");
-
-        //meat and potatoes here.
         serviceState.setIsRunning(true);
 
+        log->write(Logger::LogLevel::INFO, "RPG Server Started. Type \"quit\" or \"exit\" to stop.");
 
-        //std::vector<std::thread> runnerThreads;
-        
-        //doesn't work!
+        //dynamically spin up runner threads based on config.
+        std::vector<std::thread> eventListenerThreads;
+    
         for (int i = 0; i < configuration->getListenerThreadNum(); i++) {
-            log->write(Logger::LogLevel::INFO, "Spinning up thread: " + std::to_string(i));
-            //std::thread runnerThread(eventPollingThreadHelper, (int *)i);
-            //runnerThreads.push_back(runnerThread);       
+            log->write(Logger::LogLevel::INFO, "Spinning up thread: " + std::to_string(i));            
+            eventListenerThreads.push_back(std::thread(eventPollingThreadHelper, this, i));            
         }
-
-        //need to make this dynamic without core dumping.
-        std::thread runnerThread(eventPollingThreadHelper, this, 1);
-        std::thread runnerThread2(eventPollingThreadHelper, this, 2);
-        std::thread runnerThread3(eventPollingThreadHelper, this, 3);
-        //std::thread runnerThread(eventPollingThreadHelper, this);       
 
         std::string input = "";
         while (serviceState.isRunning()) {            
@@ -112,14 +113,11 @@ void UdpNetworkService::run() {
             }
         }
 
-        runnerThread.join();
-        runnerThread2.join();
-        runnerThread3.join();
-/*
-        for (auto *it = runnerThreads.begin(); it != runnerThreads.end(); ++it) {
+        //join all threads back after run stopped.
+        for (auto it = eventListenerThreads.begin(); it != eventListenerThreads.end(); ++it) {
             it->join();
         }
-*/
+
         log->write(Logger::LogLevel::INFO, "RPG Server Stopped.");
     } else {
         log->write(Logger::LogLevel::ERROR, "Service is not initialized. Unable to start running...");
@@ -135,13 +133,14 @@ void UdpNetworkService::testMethod() {
  * Note: Mutliple threads can enter method at the same time.
 */
 void UdpNetworkService::sendResponse(CommandTransaction response) {
-    
-    //add mutex wait to avoid threads crashing together here causing chaos.
+
+    //lock method to avoid multiple thread collisions
+    std::lock_guard<std::mutex> guard(sendMutex);
 
     IPaddress ip;
     SDLNet_ResolveHost(&ip, response.getHost().c_str(), response.getPort());
     std::string data = response.getFormattedResponse();
-    
+
     packetOut->address = ip;                    
     packetOut->data = (Uint8*)data.c_str();
     packetOut->len = data.size() + 1;

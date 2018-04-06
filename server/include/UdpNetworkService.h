@@ -4,10 +4,8 @@
 #include <string>
 #include <SDL/SDL.h>
 #include <SDL/SDL_net.h>
-#include <chrono>
 #include <thread>
-#include <pthread.h>
-#include <thread>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 #include "ServerConfiguration.h"
@@ -25,31 +23,35 @@ class UdpNetworkService {
             runnerLog.write(Logger::LogLevel::DEBUG, "Thread=" 
                                 + std::to_string(threadNum) + " Polling for server events...");
 
+            //if thread num has no packet, disable thread.
+            if (threadNum >= inPackets.size()) {
+                runnerLog.write(Logger::LogLevel::ERROR, "Thread=" 
+                                + std::to_string(threadNum) 
+                                + " No input packet allocated for this thread. Disabling thread");               
+                return NULL;
+            }
+
+            UDPpacket *inputPacket = inPackets.at(threadNum); //assign packet to thread.
+
             while (serviceState.isRunning()) {            
                 
                 IPaddress ip;
                 const char  *host = NULL;
-                Uint16 port;
-                Uint32 ipNum;
+                Uint16 port = -1;
+                Uint32 ipNum = -1;                
 
                 //wait here until we receive something
-
-                //ALL threads are currently receiving to the same packet!!!
-                //UPDATE so that each thread has it's own receive and send 
-                //packet that is dynamically created. (vector<UDPpacket>) during
-                //net service init. Might also need own socket as well... not sure.
-
-                while (!SDLNet_UDP_Recv(socket, packetIn) && serviceState.isRunning()) 
+                while (!SDLNet_UDP_Recv(socket, inputPacket) && serviceState.isRunning()) 
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));       
                 
 
-                memcpy(&ip, &packetIn->address, sizeof(IPaddress));
+                memcpy(&ip, &inputPacket->address, sizeof(IPaddress));
                 host = SDLNet_ResolveIP(&ip);
                 ipNum = SDL_SwapBE32(ip.host);
                 port = SDL_SwapBE16(ip.port);
 
                 const char *data_cStr = NULL;
-                memcpy(&data_cStr, &packetIn->data, sizeof(packetIn->data));
+                memcpy(&data_cStr, &inputPacket->data, sizeof(inputPacket->data));
                 std::string dataString(data_cStr);  
                 std::string hostString(host);     
 
@@ -86,8 +88,6 @@ class UdpNetworkService {
                     sendResponse(respTrans);
 
                 }
-
-                
             }
         }
 
@@ -104,12 +104,14 @@ class UdpNetworkService {
     private:
         void sendResponse(CommandTransaction response);
         bool isInit = false;
+        std::mutex sendMutex;
         Logger *log;
         ServerConfiguration *configuration;
         ServiceState serviceState;
         CommandProcessor commandProcessor;
         UDPsocket socket;
-        UDPpacket *packetOut, *packetIn;
+        std::vector<UDPpacket*> inPackets;
+        UDPpacket *packetOut;
 
 
 };
