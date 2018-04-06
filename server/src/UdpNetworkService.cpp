@@ -160,3 +160,57 @@ void UdpNetworkService::logRequest(int sourceThread, IPaddress sourceIp, const c
     
     log->write(Logger::LogLevel::INFO, logText);
 }
+
+
+void* UdpNetworkService::eventPollingThread(int threadNum) {            
+            
+    log->write(Logger::LogLevel::DEBUG, "Thread=" 
+                + std::to_string(threadNum) + " Polling for server events...");
+
+    //if thread num has no packet, disable thread.
+    if (threadNum >= inPackets.size()) {
+        log->write(Logger::LogLevel::ERROR, "Thread=" 
+                     + std::to_string(threadNum) 
+                    + " No input packet allocated for this thread. Disabling thread");               
+        return NULL;
+    }
+
+    UDPpacket *inputPacket = inPackets.at(threadNum); //assign packet to thread.
+
+    while (serviceState.isRunning()) {            
+                
+        IPaddress ip;
+ 
+        //wait here until we receive something
+        while (!SDLNet_UDP_Recv(socket, inputPacket) && serviceState.isRunning()) 
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));     
+
+        const char *data_cStr = NULL;
+        memcpy(&ip, &inputPacket->address, sizeof(IPaddress));
+        memcpy(&data_cStr, &inputPacket->data, sizeof(inputPacket->data));
+
+        //log request info
+        logRequest(threadNum, ip, data_cStr);
+
+        CommandTransaction *requestTransaction = commandProcessor.buildTransaction(ip, data_cStr);
+   
+        //handle requests coming in
+        if (requestTransaction != NULL) {
+            if (requestTransaction->getCommandType() == CommandType::SHUTDOWN) {
+                log->write(Logger::LogLevel::INFO, "Thread=" 
+                        + std::to_string(threadNum) + " Received quit from client. Shutting down event polling.");
+                serviceState.setIsRunning(false);
+            } else {
+                log->write(Logger::LogLevel::INFO, "Thread=" 
+                            + std::to_string(threadNum) 
+                            + " Received request from client. Processing and returning info if needed");
+                    
+                CommandTransaction *respTrans = commandProcessor.executeCommand(requestTransaction);
+                if (respTrans != NULL) {
+                    sendResponse(respTrans);
+                }                  
+            }
+        }                  
+                
+    }
+}
