@@ -7,6 +7,7 @@
  */
 
 enum CommandType {
+    SHUTDOWN,
     UPDATE,
     SET_ACTIVE,
     SET_INACTIVE

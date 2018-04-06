@@ -7,6 +7,7 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <mutex>
 
 class Logger {
 
@@ -20,6 +21,7 @@ class Logger {
     private:
         std::string getLogLevelStr(LogLevel level);
         LogType logType;
+        std::mutex logMutex;
 
 
 };

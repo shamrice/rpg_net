@@ -132,17 +132,31 @@ void UdpNetworkService::testMethod() {
  * Sends response back to client in response transaction
  * Note: Mutliple threads can enter method at the same time.
 */
-void UdpNetworkService::sendResponse(CommandTransaction response) {
+void UdpNetworkService::sendResponse(CommandTransaction *response) {
 
     //lock method to avoid multiple thread collisions
     std::lock_guard<std::mutex> guard(sendMutex);
 
     IPaddress ip;
-    SDLNet_ResolveHost(&ip, response.getHost().c_str(), response.getPort());
-    std::string data = response.getFormattedResponse();
+    SDLNet_ResolveHost(&ip, response->getHost().c_str(), response->getPort());
+    std::string data = response->getFormattedResponse();
 
     packetOut->address = ip;                    
     packetOut->data = (Uint8*)data.c_str();
     packetOut->len = data.size() + 1;
     SDLNet_UDP_Send(socket, -1, packetOut);
+}
+
+void UdpNetworkService::logRequest(int sourceThread, IPaddress sourceIp, const char *rawData) {
+
+    const char *host = SDLNet_ResolveIP(&sourceIp);
+    Uint32 ipNum = SDL_SwapBE32(sourceIp.host);
+    Uint16 port = SDL_SwapBE16(sourceIp.port);                
+
+    std::string logText = "Thread=" 
+        + std::to_string(sourceThread) + " Request from host: " 
+        + host + " port: " + std::to_string(port) 
+        + " Data: " + rawData;
+    
+    log->write(Logger::LogLevel::INFO, logText);
 }
