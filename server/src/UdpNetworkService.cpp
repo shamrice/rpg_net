@@ -9,6 +9,7 @@ UdpNetworkService::UdpNetworkService(ServerConfiguration *config) {
 
     configuration = config;
     log = new Logger(configuration->getLogType()); 
+    commandProcessor = new CommandProcessor(configuration->getServerKey());
     isInit = false;
     serviceState.setIsRunning(false);
 }
@@ -83,6 +84,11 @@ bool UdpNetworkService::init() {
         inPackets.push_back(packet);
         log->write(Logger::LogLevel::INFO, "Inbound UDP packet for thread " 
                             + std::to_string(i) + " allocated successfully.");
+    }    
+
+    if (commandProcessor == NULL) {
+        log->write(Logger::LogLevel::ERROR, "Command processor is NULL.");
+        exit(-1);
     }
 
     isInit = true;
@@ -109,6 +115,7 @@ void UdpNetworkService::run() {
             std::cin >> input;
             std::cout << "input=" << input << std::endl;;
             if (input == "quit" || input == "exit") {
+                log->write(Logger::LogLevel::INFO, "Quit command entered. Stopping server.");
                 serviceState.setIsRunning(false);
             }
         }
@@ -194,7 +201,7 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
             //log request info
             logRequest(threadNum, ip, data_cStr);
 
-            CommandTransaction *requestTransaction = commandProcessor.buildTransaction(ip, data_cStr);
+            CommandTransaction *requestTransaction = commandProcessor->buildTransaction(ip, data_cStr);
    
             //handle requests coming in
             if (requestTransaction != NULL) {
@@ -207,7 +214,7 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
                                 + std::to_string(threadNum) 
                                 + " Received request from client. Processing and returning info if needed");
                     
-                    CommandTransaction *respTrans = commandProcessor.executeCommand(requestTransaction);
+                    CommandTransaction *respTrans = commandProcessor->executeCommand(requestTransaction);
                     if (respTrans != NULL) {
                         sendResponse(respTrans);
                     }                  

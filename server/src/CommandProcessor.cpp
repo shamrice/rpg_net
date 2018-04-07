@@ -1,7 +1,8 @@
 #include "CommandProcessor.h"
 
-CommandProcessor::CommandProcessor() { 
+CommandProcessor::CommandProcessor(std::string serverKey) { 
     //temp having it's own logger...
+    this->serverKey = serverKey;
     log = new Logger(Logger::LogType::CONSOLE);
 }
 
@@ -57,25 +58,40 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
 
     std::unordered_map<std::string, std::string> builtParameters;              
 
-    //build transaction based on request
+    try {
+        //build transaction based on request
+        log->write(Logger::LogLevel::DEBUG, "Data string: " + dataString);
+    
+        //verify server key sent is correct
+        std::size_t keyPos = dataString.find(serverKey);
+        std::string key = dataString.substr(keyPos, serverKey.length());
+        
+        if (key != serverKey) {
+            log->write(Logger::LogLevel::ERROR, "Request server key does not match. Key supplied: " + key);
+            return NULL;
+        }
 
-    std::string commandStr = dataString.substr(0, dataString.find(">"));
-    log->write(Logger::LogLevel::DEBUG, "Data string: " + dataString + " cmd: " + commandStr);
+        //get command string from request.
+        std::size_t cmdStart = dataString.find_last_of('|') + 1;
+        std::size_t cmdEnd = dataString.find_first_of('>');
+        int cmdLength = cmdEnd - cmdStart;
+        std::string commandStr = dataString.substr(cmdStart, cmdLength);
+        log->write(Logger::LogLevel::DEBUG, "Data string: " + dataString + " cmd: " + commandStr);
 
-    if (commandStr == "exit" || commandStr == "quit") {
-        return new CommandTransaction(CommandType::SHUTDOWN, hostString, port, builtParameters);
-    }
+        //execute command
+        if (commandStr == "exit" || commandStr == "quit") {
+            return new CommandTransaction(CommandType::SHUTDOWN, hostString, port, builtParameters);
+        }
 
-    if (commandStr == "upd") {
-        builtParameters.insert({dataString, dataString});
-        return new CommandTransaction(CommandType::UPDATE, hostString, 4556, builtParameters);
-    }
+        if (commandStr == "upd") {
+            builtParameters.insert({dataString, dataString});
+            return new CommandTransaction(CommandType::UPDATE, hostString, 4556, builtParameters);
+        }
 
-    if (commandStr == "add") {
-        log->write(Logger::LogLevel::INFO, "Command Processor : building add request");
+        if (commandStr == "add") {
+            log->write(Logger::LogLevel::INFO, "Command Processor : building add request");
 
-        try {
-            
+ 
             std::size_t startLoc = dataString.find_first_of('{');
             std::size_t endLoc = dataString.find_first_of('}');
         
@@ -96,15 +112,12 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
 
             builtParameters.insert({usernameKey, username});
             return new CommandTransaction(CommandType::ADD, hostString, 4556, builtParameters);
-        } catch (...) {
-            log->write(Logger::LogLevel::INFO, "Command Processor : malformed add request. returning null");
-            return NULL; 
+        
         }
-    }
 
-    if (commandStr == "get") {
-        log->write(Logger::LogLevel::INFO, "Command Processor : building get request");    
-        try {
+        if (commandStr == "get") {
+            log->write(Logger::LogLevel::INFO, "Command Processor : building get request");    
+
             
             std::size_t startLoc = dataString.find_first_of('{');
             std::size_t endLoc = dataString.find_first_of('}');
@@ -126,15 +139,17 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
 
             builtParameters.insert({usernameKey, username});
             return new CommandTransaction(CommandType::GET, hostString, 4556, builtParameters);
-        } catch (...) {
-            log->write(Logger::LogLevel::INFO, "Command Processor : malformed add request. returning null");
-            return NULL; 
+        
         }
-    }
 
-    if (commandStr == "list") {
-        log->write(Logger::LogLevel::INFO, "Command Processor : building list request");    
-        return new CommandTransaction(CommandType::LIST, hostString, 4556, builtParameters);
+        if (commandStr == "list") {
+            log->write(Logger::LogLevel::INFO, "Command Processor : building list request");    
+            return new CommandTransaction(CommandType::LIST, hostString, 4556, builtParameters);
+        }
+
+    } catch (...) {
+        log->write(Logger::LogLevel::INFO, "Command Processor : malformed client request. returning null");
+        return NULL; 
     }
 
     //return null if transaction is invalid.

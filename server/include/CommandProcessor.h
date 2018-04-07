@@ -10,7 +10,7 @@
 class CommandProcessor {
 
     public:
-        CommandProcessor();
+        CommandProcessor(std::string serverKey);
         CommandTransaction* executeCommand(CommandTransaction *request);
         CommandTransaction* buildTransaction(IPaddress ip, const char *data);
 
@@ -20,6 +20,7 @@ class CommandProcessor {
         CommandTransaction* processListCommand(CommandTransaction *cmd);
         GameState gameState;       
         Logger *log;
+        std::string serverKey;
 };
 
 #endif

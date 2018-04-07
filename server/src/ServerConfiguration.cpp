@@ -61,6 +61,10 @@ Logger::LogType ServerConfiguration::getLogType() {
     return logType;
 }
 
+std::string ServerConfiguration::getServerKey() {
+    return serverKey;
+}
+
 std::string ServerConfiguration::getHost() {
     return host;
 }
@@ -79,17 +83,21 @@ bool ServerConfiguration::isConfigured() {
 
 bool ServerConfiguration::configMapSanityCheck() {
 
-    //TODO : this should be less hard coded.
-
     host = configMap.at(HOST);
+    serverKey = configMap.at(SERVER_KEY);
     std::string portStr = configMap.at(PORT);
     std::string configLogType = configMap.at(LOGTYPE);
-    std::string listenerThreadNumStr = configMap.at(LISTENER_THREADS);
+    std::string listenerThreadNumStr = configMap.at(LISTENER_THREADS);    
+
+    if (serverKey.compare("") == 0) {
+        std::cerr << "ERROR : ServerConfiguration : Server key missing from configuration... Failure.\n";
+        return false;
+    }
 
     if (host.compare("") == 0) {
         std::cerr << "ERROR : ServerConfiguration : Host value is empty... Falure.\n";
         return false;
-    }
+    } 
 
     if (portStr.compare("") == 0) {
         std::cerr << "ERROR : ServerConfiguration : Port value is empty... Failure.\n";

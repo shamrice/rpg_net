@@ -35,7 +35,7 @@ class UdpNetworkService {
         Logger *log;
         ServerConfiguration *configuration;
         ServiceState serviceState;
-        CommandProcessor commandProcessor;
+        CommandProcessor *commandProcessor;
         UDPsocket socket;
         std::vector<UDPpacket*> inPackets;
         UDPpacket *packetOut;
