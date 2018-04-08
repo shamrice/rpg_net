@@ -24,11 +24,13 @@ std::string CommandTransaction::getFormattedResponse() {
 
     std::string respString = "";
 
-    respString += getCommandTypeString() + "<";
+    respString += getCommandTypeString() + "<[";
 
     for (auto it = parameters.begin(); it != parameters.end(); ++it) {
-        respString += "{" + it->first + "=" + it->second + "}";
+        respString += "{" + it->first + ":" + it->second + "}";
     }
+
+    respString += "]";
 
     return respString;
 }
@@ -65,4 +67,6 @@ std::string CommandTransaction::getCommandTypeString() {
 
     return response;
 }
+
+
 

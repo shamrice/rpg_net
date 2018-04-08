@@ -60,14 +60,14 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
 
     try {
         //build transaction based on request
-        log->write(Logger::LogLevel::DEBUG, "Data string: " + dataString);
+        log->write(Logger::LogLevel::DEBUG, "Command Processor : Raw Data string: " + dataString);
     
         //verify server key sent is correct
         std::size_t keyPos = dataString.find(serverKey);
         std::string key = dataString.substr(keyPos, serverKey.length());
         
         if (key != serverKey) {
-            log->write(Logger::LogLevel::ERROR, "Request server key does not match. Key supplied: " + key);
+            log->write(Logger::LogLevel::ERROR, "Command Processor : Request server key does not match. Key supplied: " + key);
             return NULL;
         }
 
@@ -75,75 +75,38 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
         std::size_t cmdStart = dataString.find_last_of('|') + 1;
         std::size_t cmdEnd = dataString.find_first_of('>');
         int cmdLength = cmdEnd - cmdStart;
-        std::string commandStr = dataString.substr(cmdStart, cmdLength);
-        log->write(Logger::LogLevel::DEBUG, "Data string: " + dataString + " cmd: " + commandStr);
+        std::string commandStr = dataString.substr(cmdStart, cmdLength); 
+        
+        //get params
+        builtParameters = buildParameters(dataString); 
+
+        log->write(Logger::LogLevel::DEBUG, "Command Processor : Data string: " + dataString 
+                    + " cmd: " + commandStr);
 
         //execute command
         if (commandStr == "exit" || commandStr == "quit") {
             return new CommandTransaction(CommandType::SHUTDOWN, hostString, port, builtParameters);
         }
 
-        if (commandStr == "upd") {
-            builtParameters.insert({dataString, dataString});
+        if (commandStr == "upd") {  
+            log->write(Logger::LogLevel::INFO, "Command Processor : building update request");          
             return new CommandTransaction(CommandType::UPDATE, hostString, 4556, builtParameters);
         }
 
         if (commandStr == "add") {
-            log->write(Logger::LogLevel::INFO, "Command Processor : building add request");
-
- 
-            std::size_t startLoc = dataString.find_first_of('{');
-            std::size_t endLoc = dataString.find_first_of('}');
-        
-            std::string usernameField = dataString.substr(startLoc, endLoc);
-
-            log->write(Logger::LogLevel::INFO, "Command Processor : usernameField: " + usernameField);
-
-            std::string usernameKey = usernameField.substr(1, usernameField.find(":") - 1);
-            std::string username = usernameField.substr(
-                usernameField.find(":") + 1, 
-                usernameField.size()
-            );  
-
-            username.pop_back(); //remove trailing character
-
-            log->write(Logger::LogLevel::INFO, "Command Processor : building add request " 
-                    + usernameKey + " : " + username + " from " + usernameField);
-
-            builtParameters.insert({usernameKey, username});
+            log->write(Logger::LogLevel::INFO, "Command Processor : building add request");            
             return new CommandTransaction(CommandType::ADD, hostString, 4556, builtParameters);
         
         }
 
         if (commandStr == "get") {
-            log->write(Logger::LogLevel::INFO, "Command Processor : building get request");    
-
-            
-            std::size_t startLoc = dataString.find_first_of('{');
-            std::size_t endLoc = dataString.find_first_of('}');
-        
-            std::string usernameField = dataString.substr(startLoc, endLoc);
-
-            log->write(Logger::LogLevel::INFO, "Command Processor : usernameField: " + usernameField);
-
-            std::string usernameKey = usernameField.substr(1, usernameField.find(":") - 1);
-            std::string username = usernameField.substr(
-                usernameField.find(":") + 1, 
-                usernameField.size()
-            );  
-
-            username.pop_back(); //remove trailing character
-
-            log->write(Logger::LogLevel::INFO, "Command Processor : building get request " 
-                    + usernameKey + " : " + username + " from " + usernameField);
-
-            builtParameters.insert({usernameKey, username});
+            log->write(Logger::LogLevel::INFO, "Command Processor : building get request");                
             return new CommandTransaction(CommandType::GET, hostString, 4556, builtParameters);
         
         }
 
         if (commandStr == "list") {
-            log->write(Logger::LogLevel::INFO, "Command Processor : building list request");    
+            log->write(Logger::LogLevel::INFO, "Command Processor : building list request");                
             return new CommandTransaction(CommandType::LIST, hostString, 4556, builtParameters);
         }
 
@@ -154,6 +117,44 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
 
     //return null if transaction is invalid.
     return NULL;
+}
+
+std::unordered_map<std::string, std::string> CommandProcessor::buildParameters(std::string rawParamString) {
+
+    std::unordered_map<std::string, std::string> resultParams;
+
+    //only parse params between param delimiters. Anything past final param end delimiter
+    //will be ignored.
+    std::size_t startLoc = rawParamString.find("[{");
+    std::size_t endLoc = rawParamString.find("]"); 
+    std::string parameters = rawParamString.substr(startLoc + 2, endLoc - startLoc);
+
+    log->write(Logger::LogLevel::INFO, "Command Processor : Unprocessed Params: " + parameters);
+
+    //iterate through and get each key value pair
+    size_t paramPos = 0;
+    std::string paramKeyValuePairString;
+    while ((paramPos = parameters.find("}")) != std::string::npos) {
+        paramKeyValuePairString = parameters.substr(0, paramPos);                
+        parameters.erase(0, paramPos + 2);
+
+        //found params, add to param map.
+        std::string key = paramKeyValuePairString.substr(0, paramKeyValuePairString.find(":"));
+        std::string value = paramKeyValuePairString.substr(
+            paramKeyValuePairString.find(":") + 1,
+            paramKeyValuePairString.length()
+        );
+        resultParams.insert({key, value});
+    }
+
+    //list params to for debug to make sure parsed correctly.
+    for (auto p : resultParams) {
+        log->write(Logger::LogLevel::DEBUG, "Command Processor : result key: " 
+            + p.first + " result value: " + p.second);
+    }
+
+    return resultParams;
+
 }
 
 

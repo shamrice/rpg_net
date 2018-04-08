@@ -122,7 +122,8 @@ void UdpNetworkService::run() {
 
         //join all threads back after run stopped.
         for (auto it = eventListenerThreads.begin(); it != eventListenerThreads.end(); ++it) {
-            it->join();
+            if (it->joinable())
+                it->join();            
         }
 
         log->write(Logger::LogLevel::INFO, "RPG Server Stopped.");
@@ -142,7 +143,7 @@ void UdpNetworkService::testMethod() {
 void UdpNetworkService::sendResponse(CommandTransaction *response) {
 
     //lock method to avoid multiple thread collisions
-    std::lock_guard<std::mutex> guard(sendMutex);
+    //std::lock_guard<std::mutex> guard(sendMutex);
 
     IPaddress ip;
     SDLNet_ResolveHost(&ip, response->getHost().c_str(), response->getPort());
@@ -189,8 +190,11 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
         IPaddress ip;
  
         //wait here until we receive something
-        while (!SDLNet_UDP_Recv(socket, inputPacket) && serviceState.isRunning()) 
+        while (serviceState.isRunning() && !SDLNet_UDP_Recv(socket, inputPacket)) 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));     
+
+        log->write(Logger::LogLevel::INFO, "Thread=" 
+            + std::to_string(threadNum) + " Either something was received or shutdown.");
 
         //don't process packet if state is no longer running.
         if (serviceState.isRunning()) {

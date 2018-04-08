@@ -25,8 +25,8 @@ ADD USER:
 Description: Adds a new use to the list of users on the server. If the user is already added, they will not be 
 		 	 added again. Used for when a new player is joining a server.	
 Returns
-	On Success: info<{status=success}
-	On Failure: info<{status=failure}
+	On Success: info<{status:success}
+	On Failure: info<{status:failure}
 
 
 GET USER:
@@ -36,8 +36,8 @@ Description: Returns information on a user if they exist in the game. This infor
 			 as well as map locations.
 
 Returns
-	On Success: info<{y=0}{x=0}{user=USER_NAME}{status=success}
-	On Failure: info<{status=failure}
+	On Success: info<{y:0}{x:0}{user:USER_NAME}{status:success}
+	On Failure: info<{status:failure}
 
 LIST USERS:
 -----------
@@ -50,9 +50,9 @@ Description: Returns information on all useres currently on the server. The info
 	  NOTE2: Results are not sorted.
 
 Returns
-    On Success with users: info<{TEST_USER2.y=0}{TEST_USER2.x=0}{TEST_USER2.user=TEST_USER2}{TEST_USER.user=TEST_USER}{TEST_USER.x=0}{status=success}{TEST_USER.y=0}
-	On Success with no players: info<{status=success}
-	On Failure: info<{status=failure}
+    On Success with users: info<{TEST_USER2.y:0}{TEST_USER2.x:0}{TEST_USER2.user:TEST_USER2}{TEST_USER.user:TEST_USER}{TEST_USER.x:0}{status:success}{TEST_USER.y:0}
+	On Success with no players: info<{status:success}
+	On Failure: info<{status:failure}
 
 UPDATE USER:
 ------------
@@ -61,8 +61,8 @@ Description: Updates a users location and status on the server. This data is lat
 			 call either a get or list command to update the players location on their side.
 			 
 Returns
-	On Success: info<{status=success}
-	On Failure: info<{status=failure}
+	On Success: info<{status:success}
+	On Failure: info<{status:failure}
 
 
 
