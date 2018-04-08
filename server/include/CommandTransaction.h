@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include "CommandType.h"
 
+using namespace CommandTypes;
+
 class CommandTransaction {
 
     public:

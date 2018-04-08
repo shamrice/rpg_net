@@ -6,15 +6,18 @@
  * 
  */
 
-enum CommandType {
-    SHUTDOWN,
-    ADD,
-    GET,
-    UPDATE,
-    INFO,
-    LIST,
-    SET_ACTIVE,
-    SET_INACTIVE
-};
+namespace CommandTypes {
 
+    enum CommandType {
+        SHUTDOWN,
+        ADD,
+        GET,
+        UPDATE,
+        INFO,
+        LIST,
+        SET_ACTIVE,
+        SET_INACTIVE
+    };
+
+}
 #endif

@@ -26,10 +26,10 @@ bool ServerConfiguration::configure(std::string configFileName) {
 
     //populate the config map with contents of file.
     while (configFile >> fileContents) {
-        std::string key = fileContents.substr(0, fileContents.find(CONFIG_DELIMITER));
+        std::string key = fileContents.substr(0, fileContents.find(ConfigurationConstants::CONFIG_DELIMITER));
 
         std::string value = fileContents.substr(
-            fileContents.find(CONFIG_DELIMITER) + 1, 
+            fileContents.find(ConfigurationConstants::CONFIG_DELIMITER) + 1, 
             fileContents.size()
         );
 
@@ -83,11 +83,11 @@ bool ServerConfiguration::isConfigured() {
 
 bool ServerConfiguration::configMapSanityCheck() {
 
-    host = configMap.at(HOST);
-    serverKey = configMap.at(SERVER_KEY);
-    std::string portStr = configMap.at(PORT);
-    std::string configLogType = configMap.at(LOGTYPE);
-    std::string listenerThreadNumStr = configMap.at(LISTENER_THREADS);    
+    host = configMap.at(ConfigurationConstants::HOST);
+    serverKey = configMap.at(ConfigurationConstants::SERVER_KEY);
+    std::string portStr = configMap.at(ConfigurationConstants::PORT);
+    std::string configLogType = configMap.at(ConfigurationConstants::LOGTYPE);
+    std::string listenerThreadNumStr = configMap.at(ConfigurationConstants::LISTENER_THREADS);    
 
     if (serverKey.compare("") == 0) {
         std::cerr << "ERROR : ServerConfiguration : Server key missing from configuration... Failure.\n";
@@ -123,7 +123,7 @@ bool ServerConfiguration::configMapSanityCheck() {
 
     std::cout << "DEBUG : ServerConfiguration : logtype=" << configLogType << ".\n";
 
-    if (configLogType.compare(LOGTYPE_FILE) == 0) {
+    if (configLogType.compare(ConfigurationConstants::LOGTYPE_FILE) == 0) {
         std::cout << "DEBUG : ServerConfiguration : Setting logtype to file.\n";
         logType = Logger::LogType::FILE;
     } else {

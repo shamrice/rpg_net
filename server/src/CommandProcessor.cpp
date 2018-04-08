@@ -14,10 +14,11 @@ CommandTransaction* CommandProcessor::executeCommand(CommandTransaction *request
     switch (request->getCommandType()) {
         case UPDATE: {
             std::unordered_map<std::string, std::string> respData;
+            /*
             respData.insert({"p1.x", "45"});
             respData.insert({"p1.y", "25"});
             respData.insert({"p1.hp", "150"});
-
+            */
             response = new CommandTransaction(
                 request->getCommandType(), 
                 request->getHost(),
@@ -72,8 +73,8 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
         }
 
         //get command string from request.
-        std::size_t cmdStart = dataString.find_last_of('|') + 1;
-        std::size_t cmdEnd = dataString.find_first_of('>');
+        std::size_t cmdStart = dataString.find_last_of(CommandConstants::SERVER_KEY_DELIMITER) + 1;
+        std::size_t cmdEnd = dataString.find_first_of(CommandConstants::COMMAND_DELIMITER);
         int cmdLength = cmdEnd - cmdStart;
         std::string commandStr = dataString.substr(cmdStart, cmdLength); 
         
@@ -124,9 +125,9 @@ std::unordered_map<std::string, std::string> CommandProcessor::buildParameters(s
     std::unordered_map<std::string, std::string> resultParams;
 
     //only parse params between param delimiters. Anything past final param end delimiter
-    //will be ignored.
-    std::size_t startLoc = rawParamString.find("[{");
-    std::size_t endLoc = rawParamString.find("]"); 
+    //will be ignored.    
+    std::size_t startLoc = rawParamString.find(CommandConstants::PARAMETERS_START_DELIMITER);
+    std::size_t endLoc = rawParamString.find(CommandConstants::PARAMETERS_END_DELIMITER); 
     std::string parameters = rawParamString.substr(startLoc + 2, endLoc - startLoc);
 
     log->write(Logger::LogLevel::INFO, "Command Processor : Unprocessed Params: " + parameters);
@@ -134,14 +135,18 @@ std::unordered_map<std::string, std::string> CommandProcessor::buildParameters(s
     //iterate through and get each key value pair
     size_t paramPos = 0;
     std::string paramKeyValuePairString;
-    while ((paramPos = parameters.find("}")) != std::string::npos) {
+    while ((paramPos = parameters.find(CommandConstants::PARAMETER_END_DELIMITER)) != std::string::npos) {
         paramKeyValuePairString = parameters.substr(0, paramPos);                
         parameters.erase(0, paramPos + 2);
 
         //found params, add to param map.
-        std::string key = paramKeyValuePairString.substr(0, paramKeyValuePairString.find(":"));
+        std::string key = paramKeyValuePairString.substr(
+            0, 
+            paramKeyValuePairString.find(CommandConstants::PARAMETER_KEY_DELIMITER)
+        );
+
         std::string value = paramKeyValuePairString.substr(
-            paramKeyValuePairString.find(":") + 1,
+            paramKeyValuePairString.find(CommandConstants::PARAMETER_KEY_DELIMITER) + 1,
             paramKeyValuePairString.length()
         );
         resultParams.insert({key, value});

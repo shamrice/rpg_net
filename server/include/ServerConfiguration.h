@@ -7,7 +7,6 @@
 #include "Logger.h"
 #include "ConfigurationConstants.h"
 
-
 class ServerConfiguration {
 
     public:
