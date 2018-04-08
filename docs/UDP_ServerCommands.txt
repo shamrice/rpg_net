@@ -1,0 +1,68 @@
+
+Server commands:
+----------------
+Last updated: 04/08/18
+
+Command information:
+--------------------
+	Commands are sent over UDP from the client to the server on the server's IP or host name and port 
+	specified in the server configuration. Commands must also include the server key to be acknowledged.
+	Any commands that are sent that have improper syntax will be logged server side and ignored. The 
+	client will not receive a response on bad data. 
+
+Command structure:
+------------------
+	'|' and '|' are used to denote start and end of server key. 
+	Server key: Key set by server at start up to know which requests are legitimate. (Think of as a password)
+	command: command to be run.
+	'>' is used to denote the end of the command name. '>' is used on requests. '<' is used on responses.
+	'{' and '}' are used to denote start and end of a key value pair parameter.
+	key=value is the structure used inside of the key value pair brackets. 
+
+ADD USER:
+---------
+     Syntax: |SERVER_KEY|add>{user:USER_NAME}
+Description: Adds a new use to the list of users on the server. If the user is already added, they will not be 
+		 	 added again. Used for when a new player is joining a server.	
+Returns
+	On Success: info<{status=success}
+	On Failure: info<{status=failure}
+
+
+GET USER:
+---------
+     Syntax: |SERVER_KEY|get>{user:USER_NAME}
+Description: Returns information on a user if they exist in the game. This information includes username, 
+			 as well as map locations.
+
+Returns
+	On Success: info<{y=0}{x=0}{user=USER_NAME}{status=success}
+	On Failure: info<{status=failure}
+
+LIST USERS:
+-----------
+     Syntax: |SERVER_KEY|list>
+Description: Returns information on all useres currently on the server. The information returned is the 
+			 user name as well as their map location. This is used by the client to position other players
+		     on the client side.
+	   NOTE: This will be updated to require a map x,y location and only return players that are on the 
+			 same screen as the current player to avoid send unnecessary data.
+	  NOTE2: Results are not sorted.
+
+Returns
+    On Success with users: info<{TEST_USER2.y=0}{TEST_USER2.x=0}{TEST_USER2.user=TEST_USER2}{TEST_USER.user=TEST_USER}{TEST_USER.x=0}{status=success}{TEST_USER.y=0}
+	On Success with no players: info<{status=success}
+	On Failure: info<{status=failure}
+
+UPDATE USER:
+------------
+     Syntax: |SERVER_KEY|upd>{user:USER_NAME}{x=0}{y=0}
+Description: Updates a users location and status on the server. This data is later used by other clients when they 
+			 call either a get or list command to update the players location on their side.
+			 
+Returns
+	On Success: info<{status=success}
+	On Failure: info<{status=failure}
+
+
+
