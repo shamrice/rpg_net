@@ -19,6 +19,7 @@ class CommandProcessor {
         CommandTransaction* processAddCommand(CommandTransaction *cmd);
         CommandTransaction* processGetCommand(CommandTransaction *cmd);
         CommandTransaction* processListCommand(CommandTransaction *cmd);
+        CommandTransaction* processUpdateCommand(CommandTransaction *cmd);
         std::unordered_map<std::string, std::string> buildParameters(std::string rawParamString);
         GameState gameState;       
         Logger *log;

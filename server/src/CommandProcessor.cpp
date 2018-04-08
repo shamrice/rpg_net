@@ -13,18 +13,7 @@ CommandTransaction* CommandProcessor::executeCommand(CommandTransaction *request
 
     switch (request->getCommandType()) {
         case UPDATE: {
-            std::unordered_map<std::string, std::string> respData;
-            /*
-            respData.insert({"p1.x", "45"});
-            respData.insert({"p1.y", "25"});
-            respData.insert({"p1.hp", "150"});
-            */
-            response = new CommandTransaction(
-                request->getCommandType(), 
-                request->getHost(),
-                request->getPort(),
-                respData
-            );  
+            response = processUpdateCommand(request); 
         } break;
         
         case ADD: {
@@ -170,7 +159,7 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
     if (cmd->getCommandType() == CommandType::ADD) {
         try {
             std::string username = cmd->getParameters().at("user");        
-            User newUser(username);
+            User *newUser = new User(username);
             gameState.addUser(newUser);
 
             log->write(Logger::LogLevel::INFO, "Command Processor : Added user " + username + " to game.");
@@ -209,22 +198,26 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
     if (cmd->getCommandType() == CommandType::GET) {
         try {
             std::string username = cmd->getParameters().at("user");        
-            User foundUser = gameState.getUser(username);
+            User *foundUser = gameState.getUser(username);
             
-            std::unordered_map<std::string, std::string> params;
-            params.insert({"status", "success"});
-            params.insert({"user", foundUser.getUsername()});
-            params.insert({"x", std::to_string(foundUser.getX())});
-            params.insert({"y", std::to_string(foundUser.getY())});
+            if (foundUser != NULL) {
+                std::unordered_map<std::string, std::string> params;
+                params.insert({"status", "success"});
+                params.insert({"user", foundUser->getUsername()});
+                params.insert({"x", std::to_string(foundUser->getX())});
+                params.insert({"y", std::to_string(foundUser->getY())});
 
-            log->write(Logger::LogLevel::INFO, "Command Processor : Found user " + username + " in game.");
+                log->write(Logger::LogLevel::INFO, "Command Processor : Found user " + username + " in game.");
 
-            return new CommandTransaction(
-                CommandType::INFO,
-                cmd->getHost(),
-                cmd->getPort(),
-                params
-            );                 
+                return new CommandTransaction(
+                    CommandType::INFO,
+                    cmd->getHost(),
+                    cmd->getPort(),
+                    params
+                );    
+            } 
+
+            log->write(Logger::LogLevel::INFO, "Command Processor : User " + username + " was not found.");            
         } catch (...) {
             log->write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
         }
@@ -250,14 +243,14 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
     if (cmd->getCommandType() == CommandType::LIST) {
         try {
             
-            std::vector<User> foundUsers = gameState.getUsers();            
+            std::vector<User*> foundUsers = gameState.getUsers();            
             std::unordered_map<std::string, std::string> params;
 
             for (auto it = foundUsers.begin(); it < foundUsers.end(); ++it) {                                
-                std::string username = it->getUsername();
+                std::string username = (*it)->getUsername();
                 params.insert({username + ".user", username});
-                params.insert({username + ".x", std::to_string(it->getX())});
-                params.insert({username + ".y", std::to_string(it->getY())});
+                params.insert({username + ".x", std::to_string((*it)->getX())});
+                params.insert({username + ".y", std::to_string((*it)->getY())});
             }
 
             params.insert({"status", "success"});
@@ -278,6 +271,60 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
 
     } else {
         log->write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to list command.");
+    }
+
+    std::unordered_map<std::string, std::string> params;
+    params.insert({"status", "failure"});
+    return new CommandTransaction(
+        CommandType::INFO,
+        cmd->getHost(),
+        cmd->getPort(),
+        params
+    );
+}
+
+
+CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *cmd) {
+    log->write(Logger::LogLevel::INFO, "Command Processor : Update user info.");
+
+    //make sure it's actually anget command.
+    if (cmd->getCommandType() == CommandType::UPDATE) {
+        try {
+            std::string username = cmd->getParameters().at("user");  
+
+            User *userUpdate = new User(username);
+
+            //only update values that exist in command.
+            if (cmd->getParameters().find("x") !=  cmd->getParameters().end()) {
+                int x = atoi(cmd->getParameters().at("x").c_str());
+                userUpdate->setX(x);
+            }     
+
+            if (cmd->getParameters().find("y") !=  cmd->getParameters().end()) {
+                int y = atoi(cmd->getParameters().at("y").c_str());
+                userUpdate->setY(y);
+            }   
+           
+            //update user entry in gamestate.
+            gameState.updateUser(userUpdate);
+            log->write(Logger::LogLevel::INFO, "Command Processor : Updated user " + username + ".");
+
+            //output params.
+            std::unordered_map<std::string, std::string> params;
+            params.insert({"status", "success"});
+
+            return new CommandTransaction(
+                CommandType::INFO,
+                cmd->getHost(),
+                cmd->getPort(),
+                params
+            );                 
+        } catch (...) {
+            log->write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
+        }
+
+    } else {
+        log->write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to get command.");
     }
 
     std::unordered_map<std::string, std::string> params;
