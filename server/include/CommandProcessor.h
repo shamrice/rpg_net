@@ -14,6 +14,7 @@ class CommandProcessor {
         CommandProcessor(std::string serverKey);
         CommandTransaction* executeCommand(CommandTransaction *request);
         CommandTransaction* buildTransaction(IPaddress ip, const char *data);
+        CommandTransaction* buildInfoTransactionResponse(IPaddress destIp, int statusCode, std::string message, bool isSuccess);
 
     private: 
         CommandTransaction* processAddCommand(CommandTransaction *cmd);

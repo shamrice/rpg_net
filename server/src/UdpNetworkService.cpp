@@ -143,8 +143,7 @@ void UdpNetworkService::testMethod() {
 void UdpNetworkService::sendResponse(CommandTransaction *response) {
 
     //lock method to avoid multiple thread collisions
-    //std::lock_guard<std::mutex> guard(sendMutex);
-
+    //std::lock_guard<std::mutex> guard(sendMutex);                    
     IPaddress ip;
     SDLNet_ResolveHost(&ip, response->getHost().c_str(), response->getPort());
     std::string data = response->getFormattedResponse();
@@ -152,7 +151,13 @@ void UdpNetworkService::sendResponse(CommandTransaction *response) {
     packetOut->address = ip;                    
     packetOut->data = (Uint8*)data.c_str();
     packetOut->len = data.size() + 1;
+    
     SDLNet_UDP_Send(socket, -1, packetOut);
+
+    log->write(Logger::LogLevel::INFO, "UdpNetworkService : send : host=" 
+        + response->getHost() + " port=" + std::to_string(response->getPort())
+        + " data=" + data);
+
 }
 
 void UdpNetworkService::logRequest(int sourceThread, IPaddress sourceIp, const char *rawData) {
@@ -222,6 +227,24 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
                     if (respTrans != NULL) {
                         sendResponse(respTrans);
                     }                  
+                }
+            } else {
+                /*
+                 * Currently on the fence if server should acknowledge back to the client when
+                 * they send bad data...
+                 */
+
+                log->write(Logger::LogLevel::INFO, "Thread=" 
+                            + std::to_string(threadNum) + " Request parsed was null");
+                //send failure message on malformed requests.
+                CommandTransaction *respTrans = commandProcessor->buildInfoTransactionResponse(
+                    ip,
+                    500,
+                    "Malformed client request.",
+                    false
+                );
+                if (respTrans != NULL) {
+                    sendResponse(respTrans);
                 }
             }  
         }                

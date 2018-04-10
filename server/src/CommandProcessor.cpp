@@ -53,11 +53,16 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
         log->write(Logger::LogLevel::DEBUG, "Command Processor : Raw Data string: " + dataString);
     
         //verify server key sent is correct
+        std::string key = "";
         std::size_t keyPos = dataString.find(serverKey);
-        std::string key = dataString.substr(keyPos, serverKey.length());
-        
+
+        if (keyPos != std::string::npos) {            
+            key = dataString.substr(keyPos, serverKey.length());
+            log->write(Logger::LogLevel::DEBUG, "Command Processor : key=" + key + " keyPos=" + std::to_string(keyPos));
+        }        
         if (key != serverKey) {
-            log->write(Logger::LogLevel::ERROR, "Command Processor : Request server key does not match. Key supplied: " + key);
+            log->write(Logger::LogLevel::ERROR, "Command Processor : Request server key does not match. Key supplied: " 
+                + key + ". Returning NULL.");
             return NULL;
         }
 
@@ -74,6 +79,7 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
                     + " cmd: " + commandStr);
 
         //execute command
+        //TODO : currently ports are hard coded!
         if (commandStr == "exit" || commandStr == "quit") {
             return new CommandTransaction(CommandType::SHUTDOWN, hostString, port, builtParameters);
         }
@@ -106,6 +112,44 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
     }
 
     //return null if transaction is invalid.
+    log->write(Logger::LogLevel::INFO, "Command Processor : malformed client request. returning null");
+    return NULL;
+}
+
+CommandTransaction* CommandProcessor::buildInfoTransactionResponse(IPaddress destIp, int statusCode, std::string message, bool isSuccess) {
+
+    //TODO : Currently ports are hard coded because client sends on a random port #.
+
+    const char *host = SDLNet_ResolveIP(&destIp);
+    Uint32 ipNum = SDL_SwapBE32(destIp.host);
+    Uint16 port = 4556; //SDL_SwapBE16(destIp.port);
+           
+    std::string hostString(host);     
+
+    if (hostString.length() > 0 && port > 0) {
+
+        std::unordered_map<std::string, std::string> params;
+        if (isSuccess) {
+            params.insert({"status", "success"});
+        } else {
+            params.insert({"status", "failure"});
+        }
+
+        params.insert({"statusCode", std::to_string(statusCode)});
+
+        if (message.length() > 0) {
+            params.insert({"message", message});
+        }
+
+        return new CommandTransaction(
+            CommandType::INFO,
+            hostString,
+            port,
+            params
+        );
+    } 
+
+    log->write(Logger::LogLevel::INFO, "Command Processor : failed to build info resposne. returning null");
     return NULL;
 }
 
