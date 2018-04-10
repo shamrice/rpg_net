@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include "User.h"
+#include "Registration.h"
 
 class GameState {
 
@@ -14,9 +15,15 @@ class GameState {
         User* getUser(std::string username);  
         void updateUser(User *user);
         std::vector<User*> getUsers();
+        void addRegistration(Registration reg);
+        bool removeRegistration(std::string username);
+        void removeInactiveRegistrations();
+        std::vector<Registration> getActiveRegistrations();
+        bool getUserRegistrationStatus(std::string username);
 
-    private:
-        std::unordered_map<std::string, User*> userList;
+    private:        
+        std::unordered_map<std::string, User*> userMap;
+        std::unordered_map<std::string, Registration> registrationMap;
 };
 
 #endif

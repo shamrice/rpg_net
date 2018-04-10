@@ -160,7 +160,10 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
         try {
             std::string username = cmd->getParameters().at("user");        
             User *newUser = new User(username);
+
+            //add user to the game and register them.
             gameState.addUser(newUser);
+            gameState.addRegistration(Registration(username, cmd->getHost(), cmd->getPort()));
 
             log->write(Logger::LogLevel::INFO, "Command Processor : Added user " + username + " to game.");
 
@@ -199,13 +202,15 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
         try {
             std::string username = cmd->getParameters().at("user");        
             User *foundUser = gameState.getUser(username);
-            
+            bool regStatus = gameState.getUserRegistrationStatus(username);
+                        
             if (foundUser != NULL) {
                 std::unordered_map<std::string, std::string> params;
                 params.insert({"status", "success"});
                 params.insert({"user", foundUser->getUsername()});
                 params.insert({"x", std::to_string(foundUser->getX())});
                 params.insert({"y", std::to_string(foundUser->getY())});
+                params.insert({"isActive", std::to_string(regStatus)});
 
                 log->write(Logger::LogLevel::INFO, "Command Processor : Found user " + username + " in game.");
 
@@ -247,10 +252,13 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
             std::unordered_map<std::string, std::string> params;
 
             for (auto it = foundUsers.begin(); it < foundUsers.end(); ++it) {                                
-                std::string username = (*it)->getUsername();
+                std::string username = (*it)->getUsername();    
+                bool regStatus = gameState.getUserRegistrationStatus(username);
+
                 params.insert({username + ".user", username});
                 params.insert({username + ".x", std::to_string((*it)->getX())});
                 params.insert({username + ".y", std::to_string((*it)->getY())});
+                params.insert({username + ".isActive", std::to_string(regStatus)});
             }
 
             params.insert({"status", "success"});
@@ -290,7 +298,7 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
     //make sure it's actually anget command.
     if (cmd->getCommandType() == CommandType::UPDATE) {
         try {
-            std::string username = cmd->getParameters().at("user");  
+            std::string username = cmd->getParameters().at("user");              
 
             User *userUpdate = new User(username);
 
@@ -306,7 +314,7 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
             }   
            
             //update user entry in gamestate.
-            gameState.updateUser(userUpdate);
+            gameState.updateUser(userUpdate);            
             log->write(Logger::LogLevel::INFO, "Command Processor : Updated user " + username + ".");
 
             //output params.
