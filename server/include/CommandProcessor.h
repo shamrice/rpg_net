@@ -15,13 +15,15 @@ class CommandProcessor {
         CommandTransaction* executeCommand(CommandTransaction *request);
         CommandTransaction* buildTransaction(IPaddress ip, const char *data);
         CommandTransaction* buildInfoTransactionResponse(IPaddress destIp, int statusCode, std::string message, bool isSuccess);
-
+        CommandTransaction* buildInfoTransactionResponse(std::string host, int port, int statusCode, std::string message, bool isSuccess);
+        
     private: 
         CommandTransaction* processAddCommand(CommandTransaction *cmd);
         CommandTransaction* processGetCommand(CommandTransaction *cmd);
         CommandTransaction* processListCommand(CommandTransaction *cmd);
         CommandTransaction* processUpdateCommand(CommandTransaction *cmd);
         std::unordered_map<std::string, std::string> buildParameters(std::string rawParamString);
+        
         GameState gameState;               
         std::string serverKey;        
 };

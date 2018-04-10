@@ -87,6 +87,14 @@ bool GameState::getUserRegistrationStatus(std::string username) {
     try {
         Registration userFound = registrationMap.at(username);
         active = userFound.isActive();
+
+        //Removes user from game and registration if they are not active.
+        //not sure if i want to keep this logic here....
+        if (!active) {
+            Logger::write(Logger::LogLevel::INFO, "GameState : User is no longer active, removing from userMap");            
+            userMap.erase(username);
+            registrationMap.erase(username);
+        }
     } catch (std::out_of_range outOfRangeEx) {
         Logger::write(Logger::LogLevel::ERROR, "GameState : Get user registration for " 
             + username + " not found. " + outOfRangeEx.what());

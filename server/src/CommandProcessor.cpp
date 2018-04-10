@@ -122,7 +122,13 @@ CommandTransaction* CommandProcessor::buildInfoTransactionResponse(IPaddress des
            
     std::string hostString(host);     
 
-    if (hostString.length() > 0 && port > 0) {
+    return buildInfoTransactionResponse(hostString, port, statusCode, message, isSuccess);
+
+}
+
+CommandTransaction* CommandProcessor::buildInfoTransactionResponse(std::string host, int port, int statusCode, std::string message, bool isSuccess) {
+    
+    if (host.length() > 0 && port > 0) {
 
         std::unordered_map<std::string, std::string> params;
         if (isSuccess) {
@@ -139,7 +145,7 @@ CommandTransaction* CommandProcessor::buildInfoTransactionResponse(IPaddress des
 
         return new CommandTransaction(
             CommandType::INFO,
-            hostString,
+            host,
             port,
             params
         );
@@ -259,9 +265,8 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
                     cmd->getHost(),
                     cmd->getPort(),
                     params
-                );    
+                );  
             } 
-
             Logger::write(Logger::LogLevel::INFO, "Command Processor : User " + username + " was not found.");            
         } catch (...) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
@@ -340,33 +345,49 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
         try {
             std::string username = cmd->getParameters().at("user");              
 
-            User *userUpdate = new User(username);
+            bool isActive = gameState.getUserRegistrationStatus(username);
 
-            //only update values that exist in command.
-            if (cmd->getParameters().find("x") !=  cmd->getParameters().end()) {
-                int x = atoi(cmd->getParameters().at("x").c_str());
-                userUpdate->setX(x);
-            }     
+            if (isActive) {
 
-            if (cmd->getParameters().find("y") !=  cmd->getParameters().end()) {
-                int y = atoi(cmd->getParameters().at("y").c_str());
-                userUpdate->setY(y);
-            }   
+                User *userUpdate = new User(username);
+
+                //only update values that exist in command.
+                if (cmd->getParameters().find("x") !=  cmd->getParameters().end()) {
+                    int x = atoi(cmd->getParameters().at("x").c_str());
+                    userUpdate->setX(x);
+                }     
+
+                if (cmd->getParameters().find("y") !=  cmd->getParameters().end()) {
+                    int y = atoi(cmd->getParameters().at("y").c_str());
+                    userUpdate->setY(y);
+                }   
            
-            //update user entry in gamestate.
-            gameState.updateUser(userUpdate);            
-            Logger::write(Logger::LogLevel::INFO, "Command Processor : Updated user " + username + ".");
+                //update user entry in gamestate.
+                gameState.updateUser(userUpdate);            
+                Logger::write(Logger::LogLevel::INFO, "Command Processor : Updated user " + username + ".");
 
-            //output params.
-            std::unordered_map<std::string, std::string> params;
-            params.insert({"status", "success"});
+                //output params.
+                std::unordered_map<std::string, std::string> params;
+                params.insert({"status", "success"});
 
-            return new CommandTransaction(
-                CommandType::INFO,
-                cmd->getHost(),
-                cmd->getPort(),
-                params
-            );                 
+                return new CommandTransaction(
+                    CommandType::INFO,
+                    cmd->getHost(),
+                    cmd->getPort(),
+                    params
+                );  
+            } else {
+                Logger::write(Logger::LogLevel::INFO, "Command Processor : Cannot update user " 
+                    + username + ". User is no longer active.");
+
+                return buildInfoTransactionResponse(
+                    cmd->getHost(),
+                    cmd->getPort(),
+                    900,
+                    "NOT_ACTIVE",
+                    false
+                );
+            }               
         } catch (...) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
         }
