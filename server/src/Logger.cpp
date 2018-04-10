@@ -1,10 +1,13 @@
 #include "Logger.h"
 
-Logger::Logger(LogType type) {
-    logType = type;
-}
+//set default log type to console.
+Logger::LogType Logger::logType = CONSOLE;
+std::mutex Logger::logMutex;
 
 void Logger::write(LogLevel level, std::string message) {
+
+    //lock method to avoid multiple thread collisions (may remove later...)
+    std::lock_guard<std::mutex> guard(logMutex);                    
 
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
@@ -17,7 +20,11 @@ void Logger::write(LogLevel level, std::string message) {
         case CONSOLE:            
             std::cout << outputSS.str();
             break;
-    }
+    }    
+}
+
+void Logger::setLogType(Logger::LogType type) {
+    logType = type;
 }
 
 std::string Logger::getLogLevelStr(LogLevel level) {

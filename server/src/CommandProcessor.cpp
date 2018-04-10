@@ -1,13 +1,10 @@
 #include "CommandProcessor.h"
 
-CommandProcessor::CommandProcessor(std::string serverKey) { 
-    //temp having it's own logger...
+CommandProcessor::CommandProcessor(std::string serverKey) {     
     this->serverKey = serverKey;
-    log = new Logger(Logger::LogType::CONSOLE);
 }
 
 CommandTransaction* CommandProcessor::executeCommand(CommandTransaction *request) {
-    //debug bs right now
 
     CommandTransaction *response = NULL;
 
@@ -27,11 +24,10 @@ CommandTransaction* CommandProcessor::executeCommand(CommandTransaction *request
         case LIST: {
             response = processListCommand(request);
         } break;
-
     }
 
     if (response == NULL) {
-        log->write(Logger::LogLevel::DEBUG, "Command Processor : Execute Command : Command type not found");
+        Logger::write(Logger::LogLevel::DEBUG, "Command Processor : Execute Command : Command type not found");
     }
     //return null when response not needed.
     return response;
@@ -50,7 +46,7 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
 
     try {
         //build transaction based on request
-        log->write(Logger::LogLevel::DEBUG, "Command Processor : Raw Data string: " + dataString);
+        Logger::write(Logger::LogLevel::DEBUG, "Command Processor : Raw Data string: " + dataString);
     
         //verify server key sent is correct
         std::string key = "";
@@ -58,10 +54,10 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
 
         if (keyPos != std::string::npos) {            
             key = dataString.substr(keyPos, serverKey.length());
-            log->write(Logger::LogLevel::DEBUG, "Command Processor : key=" + key + " keyPos=" + std::to_string(keyPos));
+            Logger::write(Logger::LogLevel::DEBUG, "Command Processor : key=" + key + " keyPos=" + std::to_string(keyPos));
         }        
         if (key != serverKey) {
-            log->write(Logger::LogLevel::ERROR, "Command Processor : Request server key does not match. Key supplied: " 
+            Logger::write(Logger::LogLevel::ERROR, "Command Processor : Request server key does not match. Key supplied: " 
                 + key + ". Returning NULL.");
             return NULL;
         }
@@ -75,7 +71,7 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
         //get params
         builtParameters = buildParameters(dataString); 
 
-        log->write(Logger::LogLevel::DEBUG, "Command Processor : Data string: " + dataString 
+        Logger::write(Logger::LogLevel::DEBUG, "Command Processor : Data string: " + dataString 
                     + " cmd: " + commandStr);
 
         //execute command
@@ -85,34 +81,34 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
         }
 
         if (commandStr == "upd") {  
-            log->write(Logger::LogLevel::INFO, "Command Processor : building update request");          
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : building update request");          
             return new CommandTransaction(CommandType::UPDATE, hostString, 4556, builtParameters);
         }
 
         if (commandStr == "add") {
-            log->write(Logger::LogLevel::INFO, "Command Processor : building add request");            
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : building add request");            
             return new CommandTransaction(CommandType::ADD, hostString, 4556, builtParameters);
         
         }
 
         if (commandStr == "get") {
-            log->write(Logger::LogLevel::INFO, "Command Processor : building get request");                
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : building get request");                
             return new CommandTransaction(CommandType::GET, hostString, 4556, builtParameters);
         
         }
 
         if (commandStr == "list") {
-            log->write(Logger::LogLevel::INFO, "Command Processor : building list request");                
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : building list request");                
             return new CommandTransaction(CommandType::LIST, hostString, 4556, builtParameters);
         }
 
     } catch (...) {
-        log->write(Logger::LogLevel::INFO, "Command Processor : malformed client request. returning null");
+        Logger::write(Logger::LogLevel::INFO, "Command Processor : malformed client request. returning null");
         return NULL; 
     }
 
     //return null if transaction is invalid.
-    log->write(Logger::LogLevel::INFO, "Command Processor : malformed client request. returning null");
+    Logger::write(Logger::LogLevel::INFO, "Command Processor : malformed client request. returning null");
     return NULL;
 }
 
@@ -149,7 +145,7 @@ CommandTransaction* CommandProcessor::buildInfoTransactionResponse(IPaddress des
         );
     } 
 
-    log->write(Logger::LogLevel::INFO, "Command Processor : failed to build info resposne. returning null");
+    Logger::write(Logger::LogLevel::INFO, "Command Processor : failed to build info resposne. returning null");
     return NULL;
 }
 
@@ -163,7 +159,7 @@ std::unordered_map<std::string, std::string> CommandProcessor::buildParameters(s
     std::size_t endLoc = rawParamString.find(CommandConstants::PARAMETERS_END_DELIMITER); 
     std::string parameters = rawParamString.substr(startLoc + 2, endLoc - startLoc);
 
-    log->write(Logger::LogLevel::INFO, "Command Processor : Unprocessed Params: " + parameters);
+    Logger::write(Logger::LogLevel::INFO, "Command Processor : Unprocessed Params: " + parameters);
 
     //iterate through and get each key value pair
     size_t paramPos = 0;
@@ -187,7 +183,7 @@ std::unordered_map<std::string, std::string> CommandProcessor::buildParameters(s
 
     //list params to for debug to make sure parsed correctly.
     for (auto p : resultParams) {
-        log->write(Logger::LogLevel::DEBUG, "Command Processor : result key: " 
+        Logger::write(Logger::LogLevel::DEBUG, "Command Processor : result key: " 
             + p.first + " result value: " + p.second);
     }
 
@@ -197,7 +193,7 @@ std::unordered_map<std::string, std::string> CommandProcessor::buildParameters(s
 
 
 CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd) {
-    log->write(Logger::LogLevel::INFO, "Command Processor : Adding new user to game.");    
+    Logger::write(Logger::LogLevel::INFO, "Command Processor : Adding new user to game.");    
 
     //make sure it's actually an add command.
     if (cmd->getCommandType() == CommandType::ADD) {
@@ -209,7 +205,7 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
             gameState.addUser(newUser);
             gameState.addRegistration(Registration(username, cmd->getHost(), cmd->getPort()));
 
-            log->write(Logger::LogLevel::INFO, "Command Processor : Added user " + username + " to game.");
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : Added user " + username + " to game.");
 
             std::unordered_map<std::string, std::string> params;
             params.insert({"status", "success"});
@@ -221,11 +217,11 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
             );
             
         } catch (...) {
-            log->write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to add user to game.");
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to add user to game.");
         }
 
     } else {
-        log->write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to add command.");
+        Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to add command.");
     }
 
     std::unordered_map<std::string, std::string> params;
@@ -239,7 +235,7 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
 }
 
 CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd) {
-    log->write(Logger::LogLevel::INFO, "Command Processor : Get user info.");
+    Logger::write(Logger::LogLevel::INFO, "Command Processor : Get user info.");
 
     //make sure it's actually anget command.
     if (cmd->getCommandType() == CommandType::GET) {
@@ -256,7 +252,7 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
                 params.insert({"y", std::to_string(foundUser->getY())});
                 params.insert({"isActive", std::to_string(regStatus)});
 
-                log->write(Logger::LogLevel::INFO, "Command Processor : Found user " + username + " in game.");
+                Logger::write(Logger::LogLevel::INFO, "Command Processor : Found user " + username + " in game.");
 
                 return new CommandTransaction(
                     CommandType::INFO,
@@ -266,13 +262,13 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
                 );    
             } 
 
-            log->write(Logger::LogLevel::INFO, "Command Processor : User " + username + " was not found.");            
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : User " + username + " was not found.");            
         } catch (...) {
-            log->write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
         }
 
     } else {
-        log->write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to get command.");
+        Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to get command.");
     }
 
     std::unordered_map<std::string, std::string> params;
@@ -286,7 +282,7 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
 }
 
 CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd) {
-    log->write(Logger::LogLevel::INFO, "Command Processor : list users");
+    Logger::write(Logger::LogLevel::INFO, "Command Processor : list users");
 
     //make sure it's actually a list command.
     if (cmd->getCommandType() == CommandType::LIST) {
@@ -307,7 +303,7 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
 
             params.insert({"status", "success"});
             
-            log->write(Logger::LogLevel::INFO, "Command Processor : Found " 
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : Found " 
                             + std::to_string(foundUsers.size()) + " users in game.");
 
             return new CommandTransaction(
@@ -318,11 +314,11 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
             );
             
         } catch (...) {
-            log->write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get users.");
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get users.");
         }
 
     } else {
-        log->write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to list command.");
+        Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to list command.");
     }
 
     std::unordered_map<std::string, std::string> params;
@@ -337,7 +333,7 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
 
 
 CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *cmd) {
-    log->write(Logger::LogLevel::INFO, "Command Processor : Update user info.");
+    Logger::write(Logger::LogLevel::INFO, "Command Processor : Update user info.");
 
     //make sure it's actually anget command.
     if (cmd->getCommandType() == CommandType::UPDATE) {
@@ -359,7 +355,7 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
            
             //update user entry in gamestate.
             gameState.updateUser(userUpdate);            
-            log->write(Logger::LogLevel::INFO, "Command Processor : Updated user " + username + ".");
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : Updated user " + username + ".");
 
             //output params.
             std::unordered_map<std::string, std::string> params;
@@ -372,11 +368,11 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
                 params
             );                 
         } catch (...) {
-            log->write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
         }
 
     } else {
-        log->write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to get command.");
+        Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to get command.");
     }
 
     std::unordered_map<std::string, std::string> params;

@@ -7,8 +7,8 @@ UdpNetworkService::UdpNetworkService(ServerConfiguration *config) {
         exit(-1);
     }
 
-    configuration = config;
-    log = new Logger(configuration->getLogType()); 
+    configuration = config;    
+    Logger::setLogType(configuration->getLogType());
     commandProcessor = new CommandProcessor(configuration->getServerKey());
     isInit = false;
     serviceState.setIsRunning(false);
@@ -19,30 +19,30 @@ UdpNetworkService::~UdpNetworkService() {
     bool isSuccess = true;
 
     try {
-        log->write(Logger::LogLevel::INFO, "Closing UDP socket.");
+        Logger::write(Logger::LogLevel::INFO, "Closing UDP socket.");
         SDLNet_UDP_Close(socket);
         /*
-        log->write(Logger::LogLevel::INFO, "Freeing UDP outbound packet.");
+        Logger::write(Logger::LogLevel::INFO, "Freeing UDP outbound packet.");
         SDLNet_FreePacket(packetOut);
         */
 
-        log->write(Logger::LogLevel::INFO, "Freeing UDP inbound packet(s)");
+        Logger::write(Logger::LogLevel::INFO, "Freeing UDP inbound packet(s)");
         for (auto it = inPackets.begin(); it != inPackets.end(); ++it) {
             SDLNet_FreePacket(*it);
         }
 
-        log->write(Logger::LogLevel::INFO, "Exiting SDL_Net.");
+        Logger::write(Logger::LogLevel::INFO, "Exiting SDL_Net.");
         SDLNet_Quit();
-        log->write(Logger::LogLevel::INFO, "Exiting SDL.");
+        Logger::write(Logger::LogLevel::INFO, "Exiting SDL.");
         SDL_Quit();
     } catch (...) {
         isSuccess = false;
-        log->write(Logger::LogLevel::ERROR, "Failed to shutdown successfully. ");
-        log->write(Logger::LogLevel::ERROR, SDLNet_GetError());
-        log->write(Logger::LogLevel::ERROR, SDL_GetError());
+        Logger::write(Logger::LogLevel::ERROR, "Failed to shutdown successfully. ");
+        Logger::write(Logger::LogLevel::ERROR, SDLNet_GetError());
+        Logger::write(Logger::LogLevel::ERROR, SDL_GetError());
     }
     if (isSuccess) {
-        log->write(Logger::LogLevel::INFO, "Upd Network service shutdown successfully.");
+        Logger::write(Logger::LogLevel::INFO, "Upd Network service shutdown successfully.");
     }
 }
 
@@ -51,43 +51,43 @@ bool UdpNetworkService::init() {
     isInit = false;
 
     if (SDL_Init(0) == -1) {
-        log->write(Logger::LogLevel::ERROR, SDL_GetError());
+        Logger::write(Logger::LogLevel::ERROR, SDL_GetError());
         exit(-1);
     }
-    log->write(Logger::LogLevel::INFO, "SDL successfully initialized.");
+    Logger::write(Logger::LogLevel::INFO, "SDL successfully initialized.");
 
     if (SDLNet_Init() == - 1) {
-        log->write(Logger::LogLevel::ERROR, SDLNet_GetError());
+        Logger::write(Logger::LogLevel::ERROR, SDLNet_GetError());
         exit(-1);
     }
-    log->write(Logger::LogLevel::INFO, "SDLNet successfully initialized.");
+    Logger::write(Logger::LogLevel::INFO, "SDLNet successfully initialized.");
     
     if (!(socket = SDLNet_UDP_Open(configuration->getPort()))) {
-        log->write(Logger::LogLevel::ERROR, SDLNet_GetError());
+        Logger::write(Logger::LogLevel::ERROR, SDLNet_GetError());
         exit(-1);
     }
-    log->write(Logger::LogLevel::INFO, "Port " + std::to_string(configuration->getPort()) + " opened for listening.");
+    Logger::write(Logger::LogLevel::INFO, "Port " + std::to_string(configuration->getPort()) + " opened for listening.");
 
     if (!(packetOut = SDLNet_AllocPacket(1024))) {
-        log->write(Logger::LogLevel::ERROR, SDLNet_GetError());
+        Logger::write(Logger::LogLevel::ERROR, SDLNet_GetError());
         exit(-1);        
     }
-    log->write(Logger::LogLevel::INFO, "Outbound UDP packet allocated successfully.");
+    Logger::write(Logger::LogLevel::INFO, "Outbound UDP packet allocated successfully.");
 
     //allocate runner thread input packets
     for (int i = 0; i < configuration->getListenerThreadNum(); i++) {
         UDPpacket *packet = SDLNet_AllocPacket(1024);
         if (!packet) {
-            log->write(Logger::LogLevel::ERROR, SDLNet_GetError());
+            Logger::write(Logger::LogLevel::ERROR, SDLNet_GetError());
             exit(-1); 
         }
         inPackets.push_back(packet);
-        log->write(Logger::LogLevel::INFO, "Inbound UDP packet for thread " 
+        Logger::write(Logger::LogLevel::INFO, "Inbound UDP packet for thread " 
                             + std::to_string(i) + " allocated successfully.");
     }    
 
     if (commandProcessor == NULL) {
-        log->write(Logger::LogLevel::ERROR, "Command processor is NULL.");
+        Logger::write(Logger::LogLevel::ERROR, "Command processor is NULL.");
         exit(-1);
     }
 
@@ -100,13 +100,13 @@ void UdpNetworkService::run() {
     if (isInit) {
         serviceState.setIsRunning(true);
 
-        log->write(Logger::LogLevel::INFO, "RPG Server Started. Type \"quit\" or \"exit\" to stop.");
+        Logger::write(Logger::LogLevel::INFO, "RPG Server Started. Type \"quit\" or \"exit\" to stop.");
 
         //dynamically spin up runner threads based on config.
         std::vector<std::thread> eventListenerThreads;
     
         for (int i = 0; i < configuration->getListenerThreadNum(); i++) {
-            log->write(Logger::LogLevel::INFO, "Spinning up thread: " + std::to_string(i));            
+            Logger::write(Logger::LogLevel::INFO, "Spinning up thread: " + std::to_string(i));            
             eventListenerThreads.push_back(std::thread(eventPollingThreadHelper, this, i));            
         }
 
@@ -115,7 +115,7 @@ void UdpNetworkService::run() {
             std::cin >> input;
             std::cout << "input=" << input << std::endl;;
             if (input == "quit" || input == "exit") {
-                log->write(Logger::LogLevel::INFO, "Quit command entered. Stopping server.");
+                Logger::write(Logger::LogLevel::INFO, "Quit command entered. Stopping server.");
                 serviceState.setIsRunning(false);
             }
         }
@@ -126,9 +126,9 @@ void UdpNetworkService::run() {
                 it->join();            
         }
 
-        log->write(Logger::LogLevel::INFO, "RPG Server Stopped.");
+        Logger::write(Logger::LogLevel::INFO, "RPG Server Stopped.");
     } else {
-        log->write(Logger::LogLevel::ERROR, "Service is not initialized. Unable to start running...");
+        Logger::write(Logger::LogLevel::ERROR, "Service is not initialized. Unable to start running...");
     }
 }
 
@@ -154,7 +154,7 @@ void UdpNetworkService::sendResponse(CommandTransaction *response) {
     
     SDLNet_UDP_Send(socket, -1, packetOut);
 
-    log->write(Logger::LogLevel::INFO, "UdpNetworkService : send : host=" 
+    Logger::write(Logger::LogLevel::INFO, "UdpNetworkService : send : host=" 
         + response->getHost() + " port=" + std::to_string(response->getPort())
         + " data=" + data);
 
@@ -171,18 +171,18 @@ void UdpNetworkService::logRequest(int sourceThread, IPaddress sourceIp, const c
         + host + " port: " + std::to_string(port) 
         + " Data: " + rawData;
     
-    log->write(Logger::LogLevel::INFO, logText);
+    Logger::write(Logger::LogLevel::INFO, logText);
 }
 
 
 void* UdpNetworkService::eventPollingThread(int threadNum) {            
             
-    log->write(Logger::LogLevel::DEBUG, "Thread=" 
+    Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
                 + std::to_string(threadNum) + " Polling for server events...");
 
     //if thread num has no packet, disable thread.
     if (threadNum >= inPackets.size()) {
-        log->write(Logger::LogLevel::ERROR, "Thread=" 
+        Logger::write(Logger::LogLevel::ERROR, "Thread=" 
                      + std::to_string(threadNum) 
                     + " No input packet allocated for this thread. Disabling thread");               
         return NULL;
@@ -198,7 +198,7 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
         while (serviceState.isRunning() && !SDLNet_UDP_Recv(socket, inputPacket)) 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));     
 
-        log->write(Logger::LogLevel::INFO, "Thread=" 
+        Logger::write(Logger::LogLevel::INFO, "Thread=" 
             + std::to_string(threadNum) + " Either something was received or shutdown.");
 
         //don't process packet if state is no longer running.
@@ -215,11 +215,11 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
             //handle requests coming in
             if (requestTransaction != NULL) {
                 if (requestTransaction->getCommandType() == CommandType::SHUTDOWN) {
-                    log->write(Logger::LogLevel::INFO, "Thread=" 
+                    Logger::write(Logger::LogLevel::INFO, "Thread=" 
                             + std::to_string(threadNum) + " Received quit from client. Shutting down event polling.");
                     serviceState.setIsRunning(false);
                 } else {
-                    log->write(Logger::LogLevel::INFO, "Thread=" 
+                    Logger::write(Logger::LogLevel::INFO, "Thread=" 
                                 + std::to_string(threadNum) 
                                 + " Received request from client. Processing and returning info if needed");
                     
@@ -234,7 +234,7 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
                  * they send bad data...
                  */
 
-                log->write(Logger::LogLevel::INFO, "Thread=" 
+                Logger::write(Logger::LogLevel::INFO, "Thread=" 
                             + std::to_string(threadNum) + " Request parsed was null");
                 //send failure message on malformed requests.
                 CommandTransaction *respTrans = commandProcessor->buildInfoTransactionResponse(

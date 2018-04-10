@@ -10,8 +10,8 @@ User* GameState::getUser(std::string username) {
     try {
         return userMap.at(username);
     } catch (const std::out_of_range ex) {
-        std::cerr << "ERROR : GameState::getUser : User: " + username 
-            + " : Out of range error: " << ex.what() << std::endl;
+        Logger::write(Logger::LogLevel::ERROR, "ERROR : GameState::getUser : User: " + username 
+            + " : Out of range error: " + ex.what());
         return NULL;
     }
 }
@@ -88,7 +88,8 @@ bool GameState::getUserRegistrationStatus(std::string username) {
         Registration userFound = registrationMap.at(username);
         active = userFound.isActive();
     } catch (std::out_of_range outOfRangeEx) {
-        std::cerr << "GameState : Get user registration for " + username + " not found. " + outOfRangeEx.what() << std::endl;
+        Logger::write(Logger::LogLevel::ERROR, "GameState : Get user registration for " 
+            + username + " not found. " + outOfRangeEx.what());
     }
 
     return active;

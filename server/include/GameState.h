@@ -4,6 +4,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include "Logger.h"
 #include "User.h"
 #include "Registration.h"
 

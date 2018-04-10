@@ -31,8 +31,7 @@ class UdpNetworkService {
         void sendResponse(CommandTransaction *response);
         void logRequest(int sourceThread, IPaddress sourceIp, const char *rawData);
         bool isInit = false;
-        std::mutex sendMutex;
-        Logger *log;
+        std::mutex sendMutex;        
         ServerConfiguration *configuration;
         ServiceState serviceState;
         CommandProcessor *commandProcessor;

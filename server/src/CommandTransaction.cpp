@@ -30,7 +30,7 @@ std::string CommandTransaction::getFormattedResponse() {
         respString += "{" + it->first + ":" + it->second + "}";
     }
 
-    respString += "]";
+    respString += "]";    
 
     return respString;
 }
