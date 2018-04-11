@@ -7,6 +7,7 @@
 #include "Logger.h"
 #include "GameState.h"
 #include "CommandConstants.h"
+#include "ResponseConstants.h"
 
 class CommandProcessor {
 

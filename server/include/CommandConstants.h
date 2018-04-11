@@ -12,6 +12,11 @@ namespace CommandConstants {
     const std::string PARAMETER_END_DELIMITER = "}";
     const std::string PARAMETER_KEY_DELIMITER = ":";
 
+    const std::string UPDATE_COMMAND = "upd";
+    const std::string ADD_COMMAND = "add";
+    const std::string GET_COMMAND = "get";
+    const std::string LIST_COMMAND = "list";
+
 }
 
 #endif

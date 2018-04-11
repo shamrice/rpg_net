@@ -80,24 +80,24 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
             return new CommandTransaction(CommandType::SHUTDOWN, hostString, port, builtParameters);
         }
 
-        if (commandStr == "upd") {  
+        if (commandStr == CommandConstants::UPDATE_COMMAND) {  
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building update request");          
             return new CommandTransaction(CommandType::UPDATE, hostString, 4556, builtParameters);
         }
 
-        if (commandStr == "add") {
+        if (commandStr == CommandConstants::ADD_COMMAND) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building add request");            
             return new CommandTransaction(CommandType::ADD, hostString, 4556, builtParameters);
         
         }
 
-        if (commandStr == "get") {
+        if (commandStr == CommandConstants::GET_COMMAND) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building get request");                
             return new CommandTransaction(CommandType::GET, hostString, 4556, builtParameters);
         
         }
 
-        if (commandStr == "list") {
+        if (commandStr == CommandConstants::LIST_COMMAND) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building list request");                
             return new CommandTransaction(CommandType::LIST, hostString, 4556, builtParameters);
         }
@@ -132,15 +132,15 @@ CommandTransaction* CommandProcessor::buildInfoTransactionResponse(std::string h
 
         std::unordered_map<std::string, std::string> params;
         if (isSuccess) {
-            params.insert({"status", "success"});
+            params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
         } else {
-            params.insert({"status", "failure"});
+            params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
         }
 
-        params.insert({"statusCode", std::to_string(statusCode)});
+        params.insert({ResponseConstants::STATUS_CODE_KEY, std::to_string(statusCode)});
 
         if (message.length() > 0) {
-            params.insert({"message", message});
+            params.insert({ResponseConstants::MESSAGE_KEY, message});
         }
 
         return new CommandTransaction(
@@ -214,7 +214,7 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Added user " + username + " to game.");
 
             std::unordered_map<std::string, std::string> params;
-            params.insert({"status", "success"});
+            params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
             return new CommandTransaction(
                 CommandType::INFO,
                 cmd->getHost(),
@@ -231,7 +231,7 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
     }
 
     std::unordered_map<std::string, std::string> params;
-    params.insert({"status", "failure"});
+    params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
     return new CommandTransaction(
         CommandType::INFO,
         cmd->getHost(),
@@ -252,11 +252,11 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
                         
             if (foundUser != NULL) {
                 std::unordered_map<std::string, std::string> params;
-                params.insert({"status", "success"});
-                params.insert({"user", foundUser->getUsername()});
-                params.insert({"x", std::to_string(foundUser->getX())});
-                params.insert({"y", std::to_string(foundUser->getY())});
-                params.insert({"isActive", std::to_string(regStatus)});
+                params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
+                params.insert({ResponseConstants::USER_KEY, foundUser->getUsername()});
+                params.insert({ResponseConstants::X_KEY, std::to_string(foundUser->getX())});
+                params.insert({ResponseConstants::Y_KEY, std::to_string(foundUser->getY())});
+                params.insert({ResponseConstants::IS_ACTIVE_KEY, std::to_string(regStatus)});
 
                 Logger::write(Logger::LogLevel::INFO, "Command Processor : Found user " + username + " in game.");
 
@@ -277,7 +277,7 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
     }
 
     std::unordered_map<std::string, std::string> params;
-    params.insert({"status", "failure"});
+    params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
     return new CommandTransaction(
         CommandType::INFO,
         cmd->getHost(),
@@ -300,13 +300,13 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
                 std::string username = (*it)->getUsername();    
                 bool regStatus = gameState.getUserRegistrationStatus(username);
 
-                params.insert({username + ".user", username});
-                params.insert({username + ".x", std::to_string((*it)->getX())});
-                params.insert({username + ".y", std::to_string((*it)->getY())});
-                params.insert({username + ".isActive", std::to_string(regStatus)});
+                params.insert({username + "." + ResponseConstants::USER_KEY, username});
+                params.insert({username + "." + ResponseConstants::X_KEY, std::to_string((*it)->getX())});
+                params.insert({username + "." + ResponseConstants::Y_KEY, std::to_string((*it)->getY())});
+                params.insert({username + "." + ResponseConstants::IS_ACTIVE_KEY, std::to_string(regStatus)});
             }
 
-            params.insert({"status", "success"});
+            params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
             
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Found " 
                             + std::to_string(foundUsers.size()) + " users in game.");
@@ -327,7 +327,7 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
     }
 
     std::unordered_map<std::string, std::string> params;
-    params.insert({"status", "failure"});
+    params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
     return new CommandTransaction(
         CommandType::INFO,
         cmd->getHost(),
@@ -368,7 +368,7 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
 
                 //output params.
                 std::unordered_map<std::string, std::string> params;
-                params.insert({"status", "success"});
+                params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
 
                 return new CommandTransaction(
                     CommandType::INFO,
@@ -383,8 +383,8 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
                 return buildInfoTransactionResponse(
                     cmd->getHost(),
                     cmd->getPort(),
-                    900,
-                    "NOT_ACTIVE",
+                    ResponseConstants::NOT_ACTIVE_CODE,
+                    ResponseConstants::NOT_ACTIVE_MSG,
                     false
                 );
             }               
@@ -397,7 +397,7 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
     }
 
     std::unordered_map<std::string, std::string> params;
-    params.insert({"status", "failure"});
+    params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
     return new CommandTransaction(
         CommandType::INFO,
         cmd->getHost(),

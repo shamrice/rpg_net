@@ -239,8 +239,8 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
                 //send failure message on malformed requests.
                 CommandTransaction *respTrans = commandProcessor->buildInfoTransactionResponse(
                     ip,
-                    500,
-                    "Malformed client request.",
+                    ResponseConstants::BAD_REQUEST_CODE,
+                    ResponseConstants::BAD_REQUEST_MSG,
                     false
                 );
                 if (respTrans != NULL) {

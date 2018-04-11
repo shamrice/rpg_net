@@ -12,6 +12,7 @@
 #include "ServiceState.h"
 #include "Logger.h"
 #include "CommandProcessor.h"
+#include "ResponseConstants.h"
 
 class UdpNetworkService {
 
