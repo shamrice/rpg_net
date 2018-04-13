@@ -284,8 +284,10 @@ void* UdpNetworkService::maintenanceThread(int threadNum) {
                     Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
                         + std::to_string(threadNum) + " Maintenance Thread - User timed out. User: " + reg.getUsername());
 
-                    GameState::getInstance().removeRegistration(reg.getUsername());                    
-                    GameState::getInstance().removeUser(reg.getUsername());
+                    if (!GameState::getInstance().unregisterUser(reg.getUsername())) {
+                        Logger::write(Logger::LogLevel::ERROR, "Thread=" + std::to_string(threadNum) + " Maintenance thread - " 
+                            + " Failed to unregister user: " + reg.getUsername());
+                    }
                 }
             }
         }

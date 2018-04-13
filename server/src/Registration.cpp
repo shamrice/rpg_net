@@ -1,6 +1,6 @@
 #include "Registration.h"
 
-Registration::Registration(std::string username, std::string host, int port) {
+Registration::Registration(std::string username, std::string host, int port, User *user) {
     this->username = username;
     this->host = host;
     this->port = port;
@@ -8,7 +8,14 @@ Registration::Registration(std::string username, std::string host, int port) {
     //set last active to time of registration.
     updateLastActive();
 
-    isRegActive = true;
+    if (user == NULL) {
+        Logger::write(Logger::LogLevel::ERROR, "Registration : User cannot be null for username " + username);
+        this->user = NULL;
+        isRegActive = false;
+    } else {
+        this->user = user;
+        isRegActive = true;
+    }
 }
 
 std::string Registration::getUsername() {
@@ -39,4 +46,8 @@ bool Registration::isActive() {
 
 std::time_t Registration::getLastActive() {
     return lastActive;
+}
+
+User* Registration::getUser() {
+    return user;
 }

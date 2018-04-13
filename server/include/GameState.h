@@ -19,20 +19,18 @@ class GameState {
         GameState(GameState const&) = delete;
         void operator=(GameState const&) = delete;
 
-        void addUser(User *user);
+        void registerUser(Registration reg);
+        bool unregisterUser(std::string username);
+
         User* getUser(std::string username);  
         void updateUser(User *user);
         std::vector<User*> getUsers();
-        void removeUser(std::string username);
-        void addRegistration(Registration reg);
-        bool removeRegistration(std::string username);
-        //void removeInactiveRegistrations();
+
         std::vector<Registration> getRegistrations();
         bool getUserRegistrationStatus(std::string username);
 
     private:   
         GameState();     
-        std::unordered_map<std::string, User*> userMap;
         std::unordered_map<std::string, Registration> registrationMap;
 };
 

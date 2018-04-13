@@ -214,9 +214,14 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
             std::string username = cmd->getParameters().at("user");        
             User *newUser = new User(username);
 
+            Registration newUserReg(
+                username,
+                cmd->getHost(), 
+                cmd->getPort(),
+                newUser
+            );
             //add user to the game and register them.
-            GameState::getInstance().addUser(newUser);
-            GameState::getInstance().addRegistration(Registration(username, cmd->getHost(), cmd->getPort()));
+            GameState::getInstance().registerUser(newUserReg);
 
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Added user " + username + " to game.");
 

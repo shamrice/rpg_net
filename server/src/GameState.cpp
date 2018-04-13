@@ -2,13 +2,11 @@
 
 GameState::GameState() { }
 
-void GameState::addUser(User *user) {
-    userMap.insert({user->getUsername(), user});
-}
 
 User* GameState::getUser(std::string username) {
     try {
-        return userMap.at(username);
+        Registration userReg = registrationMap.at(username);
+        return userReg.getUser();
     } catch (const std::out_of_range ex) {
         Logger::write(Logger::LogLevel::ERROR, "ERROR : GameState::getUser : User: " + username 
             + " : Out of range error: " + ex.what());
@@ -20,8 +18,8 @@ std::vector<User*> GameState::getUsers() {
 
     std::vector<User*> results;
 
-    for (auto item : userMap) {
-        results.push_back(item.second);        
+    for (auto item : registrationMap) {
+        results.push_back(item.second.getUser());        
     } 
 
     return results;
@@ -31,13 +29,13 @@ void GameState::updateUser(User *user) {
 
     //update user if found and values are 
     //in range.
-    auto it = userMap.find(user->getUsername());
-    if (it != userMap.end()) {
+    auto it = registrationMap.find(user->getUsername());
+    if (it != registrationMap.end()) {
         if (user->getX() > 0) {
-            (*it).second->setX(user->getX());
+            (*it).second.getUser()->setX(user->getX());
         }
         if (user->getY() > 0) {
-            (*it).second->setY(user->getY());
+            (*it).second.getUser()->setY(user->getY());
         }
 
         //update last active in registration
@@ -48,35 +46,13 @@ void GameState::updateUser(User *user) {
     }
 }
 
-//removes user from game.
-void GameState::removeUser(std::string username) {
-    auto it = userMap.find(username);
-    if (it != userMap.end()) {
-        userMap.erase(username);
-        Logger::write(Logger::LogLevel::INFO, " GameState : Removed user " + username + " from user map.");
-    }    
-}
-
-//add a new user to the registration
-void GameState::addRegistration(Registration reg) {
+void GameState::registerUser(Registration reg) {
     registrationMap.emplace(reg.getUsername(), reg);
 }
 
-//remove a single registration.  
-bool GameState::removeRegistration(std::string username) {
+bool GameState::unregisterUser(std::string username) {
     registrationMap.erase(username);
 }
-
-/*
-//removes inactive registrations from game state.
-void GameState::removeInactiveRegistrations() {
-    for (auto it : registrationMap) {
-        if (!it.second.isActive()) {
-            registrationMap.erase(it.first);
-        }
-    }
-}
-*/
 
 //get vector of registrations 
 std::vector<Registration> GameState::getRegistrations() {
@@ -101,7 +77,7 @@ bool GameState::getUserRegistrationStatus(std::string username) {
         //not sure if i want to keep this logic here....
         if (!active) {
             Logger::write(Logger::LogLevel::INFO, "GameState : User is no longer active, removing from userMap");            
-            userMap.erase(username);
+            //userMap.erase(username);
             registrationMap.erase(username);
         }
     } catch (std::out_of_range outOfRangeEx) {
