@@ -121,16 +121,23 @@ CommandTransaction* CommandProcessor::buildInfoTransactionResponse(IPaddress des
     Uint16 port = 4556; //SDL_SwapBE16(destIp.port);
            
     std::string hostString(host);     
+    std::unordered_map<std::string, std::string> params;
 
-    return buildInfoTransactionResponse(hostString, port, statusCode, message, isSuccess);
+    return buildInfoTransactionResponse(hostString, port, statusCode, message, isSuccess, params);
 
 }
 
+//Overload method when no params are passed.
 CommandTransaction* CommandProcessor::buildInfoTransactionResponse(std::string host, int port, int statusCode, std::string message, bool isSuccess) {
+    std::unordered_map<std::string, std::string> params;
+    return buildInfoTransactionResponse(host, port, statusCode, message, isSuccess, params);
+}
+
+CommandTransaction* CommandProcessor::buildInfoTransactionResponse(std::string host, int port, int statusCode, std::string message, bool isSuccess, std::unordered_map<std::string, std::string> params) {
     
     if (host.length() > 0 && port > 0) {
 
-        std::unordered_map<std::string, std::string> params;
+        //std::unordered_map<std::string, std::string> params;
         if (isSuccess) {
             params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
         } else {
@@ -213,30 +220,35 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
 
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Added user " + username + " to game.");
 
-            std::unordered_map<std::string, std::string> params;
-            params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
-            return new CommandTransaction(
-                CommandType::INFO,
+            return buildInfoTransactionResponse(
                 cmd->getHost(),
                 cmd->getPort(),
-                params
+                ResponseConstants::SUCCESS_CODE,
+                ResponseConstants::ADD_USER_SUCCESS_MSG,
+                true
             );
             
         } catch (...) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to add user to game.");
+            return buildInfoTransactionResponse(
+                cmd->getHost(),
+                cmd->getPort(),
+                ResponseConstants::PROCESS_FAILURE_CODE,
+                ResponseConstants::PROCESS_FAILURE_MSG,
+                false
+            );
         }
 
     } else {
         Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to add command.");
     }
 
-    std::unordered_map<std::string, std::string> params;
-    params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
-    return new CommandTransaction(
-        CommandType::INFO,
+    return buildInfoTransactionResponse(
         cmd->getHost(),
         cmd->getPort(),
-        params
+        ResponseConstants::INVALID_CODE,
+        ResponseConstants::INVALID_MSG,
+        false
     );
 }
 
@@ -260,29 +272,46 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
 
                 Logger::write(Logger::LogLevel::INFO, "Command Processor : Found user " + username + " in game.");
 
-                return new CommandTransaction(
-                    CommandType::INFO,
+                return buildInfoTransactionResponse(
                     cmd->getHost(),
                     cmd->getPort(),
+                    ResponseConstants::SUCCESS_CODE,
+                    ResponseConstants::GET_USER_SUCCESS_MSG,
+                    true,
                     params
-                );  
+                );
+
             } 
             Logger::write(Logger::LogLevel::INFO, "Command Processor : User " + username + " was not found.");            
+
+            return buildInfoTransactionResponse(
+                cmd->getHost(),
+                cmd->getPort(),
+                ResponseConstants::NOT_FOUND_CODE,
+                ResponseConstants::NOT_FOUND_MSG,
+                false
+            );
         } catch (...) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
+            return buildInfoTransactionResponse(
+                cmd->getHost(),
+                cmd->getPort(),
+                ResponseConstants::PROCESS_FAILURE_CODE,
+                ResponseConstants::PROCESS_FAILURE_MSG,
+                false
+            );
         }
 
     } else {
         Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to get command.");
     }
 
-    std::unordered_map<std::string, std::string> params;
-    params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
-    return new CommandTransaction(
-        CommandType::INFO,
+    return buildInfoTransactionResponse(
         cmd->getHost(),
         cmd->getPort(),
-        params
+        ResponseConstants::INVALID_CODE,
+        ResponseConstants::INVALID_MSG,
+        false
     );
 }
 
@@ -311,28 +340,36 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Found " 
                             + std::to_string(foundUsers.size()) + " users in game.");
 
-            return new CommandTransaction(
-                CommandType::INFO,
+            return buildInfoTransactionResponse(
                 cmd->getHost(),
                 cmd->getPort(),
+                ResponseConstants::SUCCESS_CODE,
+                ResponseConstants::LIST_USER_SUCCESS_MSG,
+                true,
                 params
             );
             
         } catch (...) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get users.");
+            return buildInfoTransactionResponse(
+                cmd->getHost(),
+                cmd->getPort(),
+                ResponseConstants::PROCESS_FAILURE_CODE,
+                ResponseConstants::PROCESS_FAILURE_MSG,
+                false
+            );
         }
 
     } else {
         Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to list command.");
     }
 
-    std::unordered_map<std::string, std::string> params;
-    params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
-    return new CommandTransaction(
-        CommandType::INFO,
+    return buildInfoTransactionResponse(
         cmd->getHost(),
         cmd->getPort(),
-        params
+        ResponseConstants::INVALID_CODE,
+        ResponseConstants::INVALID_MSG,
+        false
     );
 }
 
@@ -370,10 +407,12 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
                 std::unordered_map<std::string, std::string> params;
                 params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
 
-                return new CommandTransaction(
-                    CommandType::INFO,
+                return buildInfoTransactionResponse(
                     cmd->getHost(),
                     cmd->getPort(),
+                    ResponseConstants::SUCCESS_CODE,
+                    ResponseConstants::UPDATE_USER_SUCCESS_MSG,
+                    true,
                     params
                 );  
             } else {
@@ -390,18 +429,24 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
             }               
         } catch (...) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to get user info.");
+            return buildInfoTransactionResponse(
+                cmd->getHost(),
+                cmd->getPort(),
+                ResponseConstants::PROCESS_FAILURE_CODE,
+                ResponseConstants::PROCESS_FAILURE_MSG,
+                false
+            );
         }
 
     } else {
         Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to get command.");
     }
 
-    std::unordered_map<std::string, std::string> params;
-    params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
-    return new CommandTransaction(
-        CommandType::INFO,
+    return buildInfoTransactionResponse(
         cmd->getHost(),
         cmd->getPort(),
-        params
+        ResponseConstants::INVALID_CODE,
+        ResponseConstants::INVALID_MSG,
+        false
     );
 }
