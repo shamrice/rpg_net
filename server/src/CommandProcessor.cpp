@@ -215,8 +215,8 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
             User *newUser = new User(username);
 
             //add user to the game and register them.
-            gameState.addUser(newUser);
-            gameState.addRegistration(Registration(username, cmd->getHost(), cmd->getPort()));
+            GameState::getInstance().addUser(newUser);
+            GameState::getInstance().addRegistration(Registration(username, cmd->getHost(), cmd->getPort()));
 
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Added user " + username + " to game.");
 
@@ -259,8 +259,8 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
     if (cmd->getCommandType() == CommandType::GET) {
         try {
             std::string username = cmd->getParameters().at("user");        
-            User *foundUser = gameState.getUser(username);
-            bool regStatus = gameState.getUserRegistrationStatus(username);
+            User *foundUser = GameState::getInstance().getUser(username);
+            bool regStatus = GameState::getInstance().getUserRegistrationStatus(username);
                         
             if (foundUser != NULL) {
                 std::unordered_map<std::string, std::string> params;
@@ -322,12 +322,12 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
     if (cmd->getCommandType() == CommandType::LIST) {
         try {
             
-            std::vector<User*> foundUsers = gameState.getUsers();            
+            std::vector<User*> foundUsers = GameState::getInstance().getUsers();            
             std::unordered_map<std::string, std::string> params;
 
             for (auto it = foundUsers.begin(); it < foundUsers.end(); ++it) {                                
                 std::string username = (*it)->getUsername();    
-                bool regStatus = gameState.getUserRegistrationStatus(username);
+                bool regStatus = GameState::getInstance().getUserRegistrationStatus(username);
 
                 params.insert({username + "." + ResponseConstants::USER_KEY, username});
                 params.insert({username + "." + ResponseConstants::X_KEY, std::to_string((*it)->getX())});
@@ -382,7 +382,7 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
         try {
             std::string username = cmd->getParameters().at("user");              
 
-            bool isActive = gameState.getUserRegistrationStatus(username);
+            bool isActive = GameState::getInstance().getUserRegistrationStatus(username);
 
             if (isActive) {
 
@@ -399,8 +399,8 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
                     userUpdate->setY(y);
                 }   
            
-                //update user entry in gamestate.
-                gameState.updateUser(userUpdate);            
+                //update user entry in GameState::getInstance().
+                GameState::getInstance().updateUser(userUpdate);            
                 Logger::write(Logger::LogLevel::INFO, "Command Processor : Updated user " + username + ".");
 
                 //output params.

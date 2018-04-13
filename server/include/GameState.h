@@ -11,7 +11,14 @@
 class GameState {
 
     public:
-        GameState();
+        static GameState& getInstance() {
+            static GameState instance;
+            return instance;
+        };
+
+        GameState(GameState const&) = delete;
+        void operator=(GameState const&) = delete;
+
         void addUser(User *user);
         User* getUser(std::string username);  
         void updateUser(User *user);
@@ -22,7 +29,8 @@ class GameState {
         std::vector<Registration> getActiveRegistrations();
         bool getUserRegistrationStatus(std::string username);
 
-    private:        
+    private:   
+        GameState();     
         std::unordered_map<std::string, User*> userMap;
         std::unordered_map<std::string, Registration> registrationMap;
 };
