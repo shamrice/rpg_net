@@ -18,7 +18,9 @@ class ServerConfiguration {
         std::string getServerKey();
         std::string getHost();
         int getPort();
-        int getListenerThreadNum();
+        int getListenerThreadCount();
+        int getMaintenanceThreadCount();
+        int getMaintenanceThreadPollingInterval();
         bool isConfigured();
 
     private:        
@@ -28,7 +30,9 @@ class ServerConfiguration {
         std::string serverKey;
         std::string host;
         int port;
-        int listenerThreadNum;
+        int listenerThreadCount;
+        int maintenanceThreadCount;
+        int maintenanceThreadPolingInterval;
         std::unordered_map<std::string, std::string> configMap;
 
 };

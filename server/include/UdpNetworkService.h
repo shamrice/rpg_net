@@ -8,6 +8,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+#include <chrono>
 #include "ServerConfiguration.h"
 #include "ServiceState.h"
 #include "Logger.h"
@@ -21,11 +22,16 @@ class UdpNetworkService {
             return ((UdpNetworkService *)context)->eventPollingThread(threadNum);
         }
 
+        static void *maintenanceThreadHelper(void *context, int threadNum) {
+            return ((UdpNetworkService *)context)->maintenanceThread(threadNum);
+        }
+
         UdpNetworkService(ServerConfiguration *config);
         ~UdpNetworkService();
         bool init();
         void run();  
         void *eventPollingThread(int threadNum);
+        void *maintenanceThread(int threadNum);
         void testMethod();   
 
     private:

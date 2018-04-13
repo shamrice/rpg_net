@@ -75,7 +75,7 @@ bool UdpNetworkService::init() {
     Logger::write(Logger::LogLevel::INFO, "Outbound UDP packet allocated successfully.");
 
     //allocate runner thread input packets
-    for (int i = 0; i < configuration->getListenerThreadNum(); i++) {
+    for (int i = 0; i < configuration->getListenerThreadCount(); i++) {
         UDPpacket *packet = SDLNet_AllocPacket(1024);
         if (!packet) {
             Logger::write(Logger::LogLevel::ERROR, SDLNet_GetError());
@@ -84,7 +84,7 @@ bool UdpNetworkService::init() {
         inPackets.push_back(packet);
         Logger::write(Logger::LogLevel::INFO, "Inbound UDP packet for thread " 
                             + std::to_string(i) + " allocated successfully.");
-    }    
+    }  
 
     if (commandProcessor == NULL) {
         Logger::write(Logger::LogLevel::ERROR, "Command processor is NULL.");
@@ -102,12 +102,18 @@ void UdpNetworkService::run() {
 
         Logger::write(Logger::LogLevel::INFO, "RPG Server Started. Type \"quit\" or \"exit\" to stop.");
 
-        //dynamically spin up runner threads based on config.
+        //dynamically spin up threads based on config.
         std::vector<std::thread> eventListenerThreads;
+        std::vector<std::thread> maintenanceThreads;
     
-        for (int i = 0; i < configuration->getListenerThreadNum(); i++) {
-            Logger::write(Logger::LogLevel::INFO, "Spinning up thread: " + std::to_string(i));            
+        for (int i = 0; i < configuration->getListenerThreadCount(); i++) {
+            Logger::write(Logger::LogLevel::INFO, "Spinning up event polling thread: " + std::to_string(i));            
             eventListenerThreads.push_back(std::thread(eventPollingThreadHelper, this, i));            
+        }
+
+        for (int i = 0; i < configuration->getMaintenanceThreadCount(); i++) {
+            Logger::write(Logger::LogLevel::INFO, "Spinning up maintenance thread: " + std::to_string(i));            
+            eventListenerThreads.push_back(std::thread(maintenanceThreadHelper, this, i));            
         }
 
         std::string input = "";
@@ -122,6 +128,11 @@ void UdpNetworkService::run() {
 
         //join all threads back after run stopped.
         for (auto it = eventListenerThreads.begin(); it != eventListenerThreads.end(); ++it) {
+            if (it->joinable())
+                it->join();            
+        }
+
+        for (auto it = maintenanceThreads.begin(); it != maintenanceThreads.end(); ++it) {
             if (it->joinable())
                 it->join();            
         }
@@ -249,5 +260,17 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
             }  
         }                
                 
+    }
+}
+
+void* UdpNetworkService::maintenanceThread(int threadNum) {
+    Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
+            + std::to_string(threadNum) + " Maintenance Thread started...");
+ 
+    while (serviceState.isRunning()) {
+        //sleep for polling interval.
+        std::this_thread::sleep_for(std::chrono::milliseconds(configuration->getMaintenanceThreadPollingInterval()));
+        Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
+            + std::to_string(threadNum) + " Maintenance Thread checking...");
     }
 }
