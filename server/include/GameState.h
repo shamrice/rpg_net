@@ -23,10 +23,11 @@ class GameState {
         User* getUser(std::string username);  
         void updateUser(User *user);
         std::vector<User*> getUsers();
+        void removeUser(std::string username);
         void addRegistration(Registration reg);
         bool removeRegistration(std::string username);
-        void removeInactiveRegistrations();
-        std::vector<Registration> getActiveRegistrations();
+        //void removeInactiveRegistrations();
+        std::vector<Registration> getRegistrations();
         bool getUserRegistrationStatus(std::string username);
 
     private:   

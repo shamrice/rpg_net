@@ -13,6 +13,7 @@ namespace ConfigurationConstants {
     const std::string LISTENER_THREADS = "LISTENER_THREADS";
     const std::string MAINTENANCE_THREADS = "MAINTENANCE_THREADS";
     const std::string MAINTENANCE_THREAD_POLLING_INTERVAL = "MAINTENANCE_THREAD_POLLING_INTERVAL";
+    const std::string INACTIVITY_TIMEOUT = "INACTIVITY_TIMEOUT";
     const std::string SERVER_KEY = "SERVER_KEY";
     const char CONFIG_DELIMITER = '=';
 }

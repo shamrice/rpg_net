@@ -48,6 +48,15 @@ void GameState::updateUser(User *user) {
     }
 }
 
+//removes user from game.
+void GameState::removeUser(std::string username) {
+    auto it = userMap.find(username);
+    if (it != userMap.end()) {
+        userMap.erase(username);
+        Logger::write(Logger::LogLevel::INFO, " GameState : Removed user " + username + " from user map.");
+    }    
+}
+
 //add a new user to the registration
 void GameState::addRegistration(Registration reg) {
     registrationMap.emplace(reg.getUsername(), reg);
@@ -58,6 +67,7 @@ bool GameState::removeRegistration(std::string username) {
     registrationMap.erase(username);
 }
 
+/*
 //removes inactive registrations from game state.
 void GameState::removeInactiveRegistrations() {
     for (auto it : registrationMap) {
@@ -66,15 +76,14 @@ void GameState::removeInactiveRegistrations() {
         }
     }
 }
+*/
 
-//get vector of registrations whose status is active
-std::vector<Registration> GameState::getActiveRegistrations() {
+//get vector of registrations 
+std::vector<Registration> GameState::getRegistrations() {
     std::vector<Registration> results;
 
     for (auto it : registrationMap) {
-        if (it.second.isActive()) {
-            results.push_back(it.second);
-        }
+        results.push_back(it.second);        
     }
 
     return results;

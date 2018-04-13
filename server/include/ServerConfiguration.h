@@ -21,6 +21,7 @@ class ServerConfiguration {
         int getListenerThreadCount();
         int getMaintenanceThreadCount();
         int getMaintenanceThreadPollingInterval();
+        int getInactivityTimeout();
         bool isConfigured();
 
     private:        
@@ -33,6 +34,7 @@ class ServerConfiguration {
         int listenerThreadCount;
         int maintenanceThreadCount;
         int maintenanceThreadPolingInterval;
+        int inactivityTimeout;
         std::unordered_map<std::string, std::string> configMap;
 
 };

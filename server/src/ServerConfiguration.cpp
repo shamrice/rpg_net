@@ -85,6 +85,10 @@ int ServerConfiguration::getMaintenanceThreadPollingInterval() {
     return maintenanceThreadPolingInterval;
 }
 
+int ServerConfiguration::getInactivityTimeout() {
+    return inactivityTimeout;
+}
+
 bool ServerConfiguration::isConfigured() {
     return isServerConfigured;
 }
@@ -99,6 +103,7 @@ bool ServerConfiguration::configMapSanityCheck() {
         std::string listenerThreadCountStr = configMap.at(ConfigurationConstants::LISTENER_THREADS);    
         std::string maintenanceThreadCountStr = configMap.at(ConfigurationConstants::MAINTENANCE_THREADS);
         std::string maintenanceThreadPollingStr = configMap.at(ConfigurationConstants::MAINTENANCE_THREAD_POLLING_INTERVAL);
+        std::string inactivityTimeoutStr = configMap.at(ConfigurationConstants::INACTIVITY_TIMEOUT);
 
         if (serverKey.compare("") == 0) {
             std::cerr << "ERROR : ServerConfiguration : Server key missing from configuration... Failure.\n";
@@ -154,6 +159,18 @@ bool ServerConfiguration::configMapSanityCheck() {
             if (maintenanceThreadPolingInterval <= 0) {
                 std::cerr << "WARN : ServerConfiguration : Maintenance thread polling value <= 0. Defaulting to 10000ms\n";
                 maintenanceThreadPolingInterval = 10000;
+            } 
+        }
+
+        //inactivity timeout
+        if (inactivityTimeoutStr.compare("") == 0) {
+            std::cerr << "WARN: ServerConfiguration : User inactivity timeout is empty. Defaulting to 600000ms\n";
+            inactivityTimeout = 600000;
+        } else {
+            inactivityTimeout = atoi(inactivityTimeoutStr.c_str());
+            if (inactivityTimeout <= 0) {
+                std::cerr << "WARN : ServerConfiguration : User inactivity timeout value <= 0. Defaulting to 600000ms\n";
+                inactivityTimeout = 600000;
             } 
         }
 

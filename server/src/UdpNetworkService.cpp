@@ -258,8 +258,7 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
                     sendResponse(respTrans);
                 }
             }  
-        }                
-                
+        }                               
     }
 }
 
@@ -272,5 +271,23 @@ void* UdpNetworkService::maintenanceThread(int threadNum) {
         std::this_thread::sleep_for(std::chrono::milliseconds(configuration->getMaintenanceThreadPollingInterval()));
         Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
             + std::to_string(threadNum) + " Maintenance Thread checking...");
+
+        for (Registration reg : GameState::getInstance().getRegistrations()) {
+
+            //check if user is currently maked as active in registration
+            if (reg.isActive()) {
+                std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+                std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+                
+                //if user hasn't been active since timeout elapsed, remove from game.
+                if (reg.getLastActive() < (currentTime - (configuration->getInactivityTimeout() / 1000))) {
+                    Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
+                        + std::to_string(threadNum) + " Maintenance Thread - User timed out. User: " + reg.getUsername());
+
+                    GameState::getInstance().removeRegistration(reg.getUsername());                    
+                    GameState::getInstance().removeUser(reg.getUsername());
+                }
+            }
+        }
     }
 }

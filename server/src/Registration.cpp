@@ -34,18 +34,9 @@ void Registration::setInactive() {
 }
 
 bool Registration::isActive() {
-
-    //if reg is currently active, make sure timeout hasn't expired.
-    if (isRegActive) {
-        
-        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-        std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
-
-        //if user hasn't been active since timeout elapsed, set inactive.
-        if (lastActive < (currentTime - timeoutSeconds)) {
-            isRegActive = false;
-        }
-    }    
-
     return isRegActive;
+}
+
+std::time_t Registration::getLastActive() {
+    return lastActive;
 }
