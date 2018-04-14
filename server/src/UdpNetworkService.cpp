@@ -105,6 +105,8 @@ void UdpNetworkService::run() {
         //dynamically spin up threads based on config.
         std::vector<std::thread> eventListenerThreads;
         std::vector<std::thread> maintenanceThreads;
+
+        std::thread notificationThread(notificationThreadHelper, this);
     
         for (int i = 0; i < configuration->getListenerThreadCount(); i++) {
             Logger::write(Logger::LogLevel::INFO, "Spinning up event polling thread: " + std::to_string(i));            
@@ -124,6 +126,15 @@ void UdpNetworkService::run() {
                 Logger::write(Logger::LogLevel::INFO, "Quit command entered. Stopping server.");
                 serviceState.setIsRunning(false);
             }
+
+            //DEBUG, send test notification message to all registered users.
+            if (input == "send") {
+                Logger::write(Logger::LogLevel::DEBUG, "Sending debug server notification");
+                for (auto reg : GameState::getInstance().getRegistrations()) {
+                    Notification noteToSend(reg.getUsername(), "TEST_SERVER_MESSAGE");
+                    GameState::getInstance().addNotification(noteToSend);
+                }
+            }
         }
 
         //join all threads back after run stopped.
@@ -135,6 +146,10 @@ void UdpNetworkService::run() {
         for (auto it = maintenanceThreads.begin(); it != maintenanceThreads.end(); ++it) {
             if (it->joinable())
                 it->join();            
+        }
+
+        if (notificationThread.joinable()) {
+            notificationThread.join();
         }
 
         Logger::write(Logger::LogLevel::INFO, "RPG Server Stopped.");
@@ -269,8 +284,8 @@ void* UdpNetworkService::maintenanceThread(int threadNum) {
     while (serviceState.isRunning()) {
         //sleep for polling interval.
         std::this_thread::sleep_for(std::chrono::milliseconds(configuration->getMaintenanceThreadPollingInterval()));
-        Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
-            + std::to_string(threadNum) + " Maintenance Thread checking...");
+        /*Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
+            + std::to_string(threadNum) + " Maintenance Thread checking...");*/
 
         for (Registration reg : GameState::getInstance().getRegistrations()) {
 
@@ -291,5 +306,60 @@ void* UdpNetworkService::maintenanceThread(int threadNum) {
                 }
             }
         }
+    }
+}
+
+void* UdpNetworkService::notificationThread() {
+    Logger::write(Logger::LogLevel::DEBUG, "Notification Thread started...");
+ 
+    while (serviceState.isRunning()) {
+        //poll notifications based on polling interval.
+        std::this_thread::sleep_for(std::chrono::milliseconds(configuration->getNotificationThreadPollingInterval()));
+ 
+        //TODO : Refactor this!
+
+        //get next notification to be sent
+        Notification nextNotification = GameState::getInstance().getNextNotification();
+
+        //if there's a message to be sent, send it.
+        if (!nextNotification.getMessage().empty() && !nextNotification.getTo().empty()) {
+
+            //get to user from user registration
+            Registration *toUser = GameState::getInstance().getRegistration(nextNotification.getTo());
+
+            if (toUser != NULL) {
+
+                //build chat message
+                std::unordered_map<std::string, std::string> params;
+
+                params.insert({"from", nextNotification.getFrom()});
+                params.insert({"to", nextNotification.getTo()});
+                params.insert({"chat_msg", nextNotification.getMessage()});
+
+                CommandTransaction response(
+                    CommandType::CHAT,
+                    toUser->getHost(),
+                    toUser->getPort(),
+                    params
+                );
+
+                //send chat message
+                IPaddress ip;
+                SDLNet_ResolveHost(&ip, response.getHost().c_str(), response.getPort());
+                std::string data = response.getFormattedResponse();
+
+                packetOut->address = ip;                    
+                packetOut->data = (Uint8*)data.c_str();
+                packetOut->len = data.size() + 1;
+    
+                SDLNet_UDP_Send(socket, -1, packetOut);
+
+                Logger::write(Logger::LogLevel::INFO, "UdpNetworkService : Notification Thread Send : host=" 
+                    + response.getHost() + " port=" + std::to_string(response.getPort())
+                    + " data=" + data);
+            }
+
+        }
+
     }
 }

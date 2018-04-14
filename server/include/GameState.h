@@ -7,6 +7,7 @@
 #include "Logger.h"
 #include "User.h"
 #include "Registration.h"
+#include "Notification.h"
 
 class GameState {
 
@@ -27,11 +28,16 @@ class GameState {
         std::vector<User*> getUsers();
 
         std::vector<Registration> getRegistrations();
+        Registration* getRegistration(std::string username);
         bool getUserRegistrationStatus(std::string username);
+
+        void addNotification(Notification newNotification);
+        Notification getNextNotification();
 
     private:   
         GameState();     
         std::unordered_map<std::string, Registration> registrationMap;
+        std::vector<Notification> notificationQueue;
 };
 
 #endif

@@ -87,3 +87,30 @@ bool GameState::getUserRegistrationStatus(std::string username) {
 
     return active;
 }
+
+Registration* GameState::getRegistration(std::string username) {
+    try {
+        return &registrationMap.at(username);
+    } catch (std::out_of_range oorEx) {
+         Logger::write(Logger::LogLevel::ERROR, "GameState : Get user registration for " 
+            + username + " not found. " + oorEx.what());
+    }
+
+    return NULL;
+}
+
+//add new notification to the beginning of the queue
+void GameState::addNotification(Notification newNotification) {
+    notificationQueue.insert(notificationQueue.begin(), newNotification);
+}
+
+//get last notification from the queue and remove it.
+Notification GameState::getNextNotification() {
+    if (!notificationQueue.empty()) {
+        Notification result = notificationQueue.back();
+        notificationQueue.pop_back();
+        return result;
+    }
+
+    return Notification({}, {});
+}

@@ -85,6 +85,10 @@ int ServerConfiguration::getMaintenanceThreadPollingInterval() {
     return maintenanceThreadPolingInterval;
 }
 
+int ServerConfiguration::getNotificationThreadPollingInterval() {
+    return notificationThreadPollingInterval;
+}
+
 int ServerConfiguration::getInactivityTimeout() {
     return inactivityTimeout;
 }
@@ -103,6 +107,7 @@ bool ServerConfiguration::configMapSanityCheck() {
         std::string listenerThreadCountStr = configMap.at(ConfigurationConstants::LISTENER_THREADS);    
         std::string maintenanceThreadCountStr = configMap.at(ConfigurationConstants::MAINTENANCE_THREADS);
         std::string maintenanceThreadPollingStr = configMap.at(ConfigurationConstants::MAINTENANCE_THREAD_POLLING_INTERVAL);
+        std::string notificationThreadPollingStr = configMap.at(ConfigurationConstants::NOTIFICATION_THREAD_POLLING_INTERVAL);
         std::string inactivityTimeoutStr = configMap.at(ConfigurationConstants::INACTIVITY_TIMEOUT);
 
         if (serverKey.compare("") == 0) {
@@ -159,6 +164,18 @@ bool ServerConfiguration::configMapSanityCheck() {
             if (maintenanceThreadPolingInterval <= 0) {
                 std::cerr << "WARN : ServerConfiguration : Maintenance thread polling value <= 0. Defaulting to 10000ms\n";
                 maintenanceThreadPolingInterval = 10000;
+            } 
+        }
+
+        //notification polling interval.
+        if (notificationThreadPollingStr.compare("") == 0) {
+            std::cerr << "WARN: ServerConfiguration : Notification thread polling interval empty. Defaulting to 10000ms\n";
+            notificationThreadPollingInterval = 10000;
+        } else {
+            notificationThreadPollingInterval = atoi(notificationThreadPollingStr.c_str());
+            if (notificationThreadPollingInterval <= 0) {
+                std::cerr << "WARN : ServerConfiguration : Notification thread polling value <= 0. Defaulting to 10000ms\n";
+                notificationThreadPollingInterval = 10000;
             } 
         }
 

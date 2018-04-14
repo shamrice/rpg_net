@@ -63,6 +63,10 @@ std::string CommandTransaction::getCommandTypeString() {
         case CommandType::LIST:
             response = "list";
             break;
+
+        case CommandType::CHAT:
+            response = "chat";
+            break;
     }
 
     return response;

@@ -15,8 +15,7 @@ namespace CommandTypes {
         UPDATE,
         INFO,
         LIST,
-        SET_ACTIVE,
-        SET_INACTIVE
+        CHAT
     };
 
 }

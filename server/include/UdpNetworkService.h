@@ -26,12 +26,17 @@ class UdpNetworkService {
             return ((UdpNetworkService *)context)->maintenanceThread(threadNum);
         }
 
+        static void *notificationThreadHelper(void *context) {
+            return ((UdpNetworkService *) context)->notificationThread();
+        }
+
         UdpNetworkService(ServerConfiguration *config);
         ~UdpNetworkService();
         bool init();
         void run();  
-        void *eventPollingThread(int threadNum);
-        void *maintenanceThread(int threadNum);
+        void* eventPollingThread(int threadNum);
+        void* maintenanceThread(int threadNum);
+        void* notificationThread();
         void testMethod();   
 
     private:
