@@ -148,15 +148,15 @@ CommandTransaction* CommandProcessor::buildInfoTransactionResponse(std::string h
 
         //std::unordered_map<std::string, std::string> params;
         if (isSuccess) {
-            params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
+            params.insert({CommandConstants::STATUS_KEY, CommandConstants::STATUS_SUCCESS});
         } else {
-            params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_FAILURE});
+            params.insert({CommandConstants::STATUS_KEY, CommandConstants::STATUS_FAILURE});
         }
 
-        params.insert({ResponseConstants::STATUS_CODE_KEY, std::to_string(statusCode)});
+        params.insert({CommandConstants::STATUS_CODE_KEY, std::to_string(statusCode)});
 
         if (message.length() > 0) {
-            params.insert({ResponseConstants::MESSAGE_KEY, message});
+            params.insert({CommandConstants::MESSAGE_KEY, message});
         }
 
         return new CommandTransaction(
@@ -220,7 +220,7 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
     //make sure it's actually an add command.
     if (cmd->getCommandType() == CommandType::ADD) {
         try {
-            std::string username = cmd->getParameters().at("user");        
+            std::string username = cmd->getParameters().at(CommandConstants::USER_KEY);        
             User *newUser = new User(username);
 
             Registration newUserReg(
@@ -272,17 +272,17 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
     //make sure it's actually anget command.
     if (cmd->getCommandType() == CommandType::GET) {
         try {
-            std::string username = cmd->getParameters().at("user");        
+            std::string username = cmd->getParameters().at(CommandConstants::USER_KEY);        
             User *foundUser = GameState::getInstance().getUser(username);
             bool regStatus = GameState::getInstance().getUserRegistrationStatus(username);
                         
             if (foundUser != NULL) {
                 std::unordered_map<std::string, std::string> params;
-                params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
-                params.insert({ResponseConstants::USER_KEY, foundUser->getUsername()});
-                params.insert({ResponseConstants::X_KEY, std::to_string(foundUser->getX())});
-                params.insert({ResponseConstants::Y_KEY, std::to_string(foundUser->getY())});
-                params.insert({ResponseConstants::IS_ACTIVE_KEY, std::to_string(regStatus)});
+                params.insert({CommandConstants::STATUS_KEY, CommandConstants::STATUS_SUCCESS});
+                params.insert({CommandConstants::USER_KEY, foundUser->getUsername()});
+                params.insert({CommandConstants::X_KEY, std::to_string(foundUser->getX())});
+                params.insert({CommandConstants::Y_KEY, std::to_string(foundUser->getY())});
+                params.insert({CommandConstants::IS_ACTIVE_KEY, std::to_string(regStatus)});
 
                 Logger::write(Logger::LogLevel::INFO, "Command Processor : Found user " + username + " in game.");
 
@@ -343,13 +343,13 @@ CommandTransaction* CommandProcessor::processListCommand(CommandTransaction *cmd
                 std::string username = (*it)->getUsername();    
                 bool regStatus = GameState::getInstance().getUserRegistrationStatus(username);
 
-                params.insert({username + "." + ResponseConstants::USER_KEY, username});
-                params.insert({username + "." + ResponseConstants::X_KEY, std::to_string((*it)->getX())});
-                params.insert({username + "." + ResponseConstants::Y_KEY, std::to_string((*it)->getY())});
-                params.insert({username + "." + ResponseConstants::IS_ACTIVE_KEY, std::to_string(regStatus)});
+                params.insert({username + "." + CommandConstants::USER_KEY, username});
+                params.insert({username + "." + CommandConstants::X_KEY, std::to_string((*it)->getX())});
+                params.insert({username + "." + CommandConstants::Y_KEY, std::to_string((*it)->getY())});
+                params.insert({username + "." + CommandConstants::IS_ACTIVE_KEY, std::to_string(regStatus)});
             }
 
-            params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
+            params.insert({CommandConstants::STATUS_KEY, CommandConstants::STATUS_SUCCESS});
             
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Found " 
                             + std::to_string(foundUsers.size()) + " users in game.");
@@ -394,7 +394,7 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
     //make sure it's actually anget command.
     if (cmd->getCommandType() == CommandType::UPDATE) {
         try {
-            std::string username = cmd->getParameters().at("user");              
+            std::string username = cmd->getParameters().at(CommandConstants::USER_KEY);              
 
             bool isActive = GameState::getInstance().getUserRegistrationStatus(username);
 
@@ -403,13 +403,13 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
                 User *userUpdate = new User(username);
 
                 //only update values that exist in command.
-                if (cmd->getParameters().find("x") !=  cmd->getParameters().end()) {
-                    int x = atoi(cmd->getParameters().at("x").c_str());
+                if (cmd->getParameters().find(CommandConstants::X_KEY) !=  cmd->getParameters().end()) {
+                    int x = atoi(cmd->getParameters().at(CommandConstants::X_KEY).c_str());
                     userUpdate->setX(x);
                 }     
 
-                if (cmd->getParameters().find("y") !=  cmd->getParameters().end()) {
-                    int y = atoi(cmd->getParameters().at("y").c_str());
+                if (cmd->getParameters().find(CommandConstants::Y_KEY) !=  cmd->getParameters().end()) {
+                    int y = atoi(cmd->getParameters().at(CommandConstants::Y_KEY).c_str());
                     userUpdate->setY(y);
                 }   
            
@@ -419,7 +419,7 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
 
                 //output params.
                 std::unordered_map<std::string, std::string> params;
-                params.insert({ResponseConstants::STATUS_KEY, ResponseConstants::STATUS_SUCCESS});
+                params.insert({CommandConstants::STATUS_KEY, CommandConstants::STATUS_SUCCESS});
 
                 return buildInfoTransactionResponse(
                     cmd->getHost(),
@@ -475,9 +475,9 @@ CommandTransaction* CommandProcessor::processNotificationCommand(CommandTransact
     if (cmd->getCommandType() == CommandType::NOTIFICATION) {
 
         try {
-            std::string to = cmd->getParameters().at("to");
-            std::string from = cmd->getParameters().at("user");
-            std::string message = cmd->getParameters().at("chatmsg");     
+            std::string to = cmd->getParameters().at(CommandConstants::NOTIFICATION_TO_KEY);
+            std::string from = cmd->getParameters().at(CommandConstants::USER_KEY);
+            std::string message = cmd->getParameters().at(CommandConstants::NOTIFICATION_MESSAGE_KEY);     
         
             Registration *toReg = GameState::getInstance().getRegistration(to);
 

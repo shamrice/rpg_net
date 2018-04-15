@@ -332,9 +332,9 @@ void* UdpNetworkService::notificationThread() {
                 //build chat message
                 std::unordered_map<std::string, std::string> params;
 
-                params.insert({"from", nextNotification.getFrom()});
-                params.insert({"to", nextNotification.getTo()});
-                params.insert({"chatmsg", nextNotification.getMessage()});
+                params.insert({CommandConstants::NOTIFICATION_FROM_KEY, nextNotification.getFrom()});
+                params.insert({CommandConstants::NOTIFICATION_TO_KEY, nextNotification.getTo()});
+                params.insert({CommandConstants::NOTIFICATION_MESSAGE_KEY, nextNotification.getMessage()});
 
                 CommandTransaction response(
                     CommandType::NOTIFICATION,

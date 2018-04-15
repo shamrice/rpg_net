@@ -19,6 +19,22 @@ namespace CommandConstants {
     const std::string INFO_COMMAND = "info";
     const std::string NOTIFICATION_COMMAND = "talk";
 
+    //params
+    const std::string STATUS_KEY = "status";
+    const std::string STATUS_SUCCESS = "success";
+    const std::string STATUS_FAILURE = "failure";
+
+    const std::string STATUS_CODE_KEY = "statusCode";
+    const std::string MESSAGE_KEY = "message";
+
+    const std::string NOTIFICATION_TO_KEY = "to";
+    const std::string NOTIFICATION_FROM_KEY = "from";
+    const std::string NOTIFICATION_MESSAGE_KEY = "chatmsg";
+
+    const std::string USER_KEY = "user";
+    const std::string IS_ACTIVE_KEY = "isActive";
+    const std::string X_KEY = "x";
+    const std::string Y_KEY = "y";
 }
 
 #endif

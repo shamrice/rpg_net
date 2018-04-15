@@ -26,19 +26,6 @@ namespace ResponseConstants {
     const std::string NOTIFICATION_SUCCESS_MSG = "NOTIFICATION_QUEUED";
     const std::string SUCCESS_MSG = "SUCCESS";
 
-    //response params
-    const std::string STATUS_KEY = "status";
-    const std::string STATUS_SUCCESS = "success";
-    const std::string STATUS_FAILURE = "failure";
-
-    const std::string STATUS_CODE_KEY = "statusCode";
-    const std::string MESSAGE_KEY = "message";
-
-    const std::string USER_KEY = "user";
-    const std::string IS_ACTIVE_KEY = "isActive";
-    const std::string X_KEY = "x";
-    const std::string Y_KEY = "y";
-
 }
 
 #endif
