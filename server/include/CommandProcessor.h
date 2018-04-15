@@ -2,6 +2,7 @@
 #define __COMMAND_PROCESSOR__
 
 #include <SDL/SDL_net.h>
+#include <stdexcept>
 #include "CommandType.h"
 #include "CommandTransaction.h"
 #include "Logger.h"

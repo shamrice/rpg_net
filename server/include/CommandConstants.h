@@ -31,6 +31,9 @@ namespace CommandConstants {
     const std::string NOTIFICATION_FROM_KEY = "from";
     const std::string NOTIFICATION_MESSAGE_KEY = "chatmsg";
 
+    const std::string PORT_KEY = "port";
+    const std::string GET_USER_KEY = "getuser";
+
     const std::string USER_KEY = "user";
     const std::string IS_ACTIVE_KEY = "isActive";
     const std::string X_KEY = "x";

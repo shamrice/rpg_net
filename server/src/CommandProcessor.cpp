@@ -31,7 +31,7 @@ CommandTransaction* CommandProcessor::executeCommand(CommandTransaction *request
     }
 
     if (response == NULL) {
-        Logger::write(Logger::LogLevel::DEBUG, "Command Processor : Execute Command : Command type not found");
+        Logger::write(Logger::LogLevel::DEBUG, "Command Processor : Execute Command : Command type not found. Request after parsing was NULL");
     }
     //return null when response not needed.
     return response;
@@ -41,7 +41,7 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
      
     const char *host = SDLNet_ResolveIP(&ip);
     Uint32 ipNum = SDL_SwapBE32(ip.host);
-    Uint16 port = SDL_SwapBE16(ip.port);
+    //Uint16 port = SDL_SwapBE16(ip.port);
                 
     std::string dataString(data);  
     std::string hostString(host);     
@@ -58,7 +58,7 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
 
         if (keyPos != std::string::npos) {            
             key = dataString.substr(keyPos, serverKey.length());
-            Logger::write(Logger::LogLevel::DEBUG, "Command Processor : key=" + key + " keyPos=" + std::to_string(keyPos));
+            Logger::write(Logger::LogLevel::DEBUG, "Command Processor : server key=" + key + " keyPos=" + std::to_string(keyPos));
         }        
         if (key != serverKey) {
             Logger::write(Logger::LogLevel::ERROR, "Command Processor : Request server key does not match. Key supplied: " 
@@ -78,37 +78,48 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
         Logger::write(Logger::LogLevel::DEBUG, "Command Processor : Data string: " + dataString 
                     + " cmd: " + commandStr);
 
-        //execute command
-        //TODO : currently ports are hard coded!
+        //get user's listening port from registration if not an add command.
+        int port = -1;
+        if (commandStr != CommandConstants::ADD_COMMAND) {
+            std::string username = builtParameters.at(CommandConstants::USER_KEY);
+            Registration *userReg = GameState::getInstance().getRegistration(username);
+            if (userReg != NULL) {
+                port = userReg->getPort();
+            } else {
+                throw std::runtime_error("User registration not found");
+            }
+        }
+
+        //execute command        
         if (commandStr == "exit" || commandStr == "quit") {
             return new CommandTransaction(CommandType::SHUTDOWN, hostString, port, builtParameters);
         }
 
         if (commandStr == CommandConstants::UPDATE_COMMAND) {  
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building update request");          
-            return new CommandTransaction(CommandType::UPDATE, hostString, 4556, builtParameters);
+            return new CommandTransaction(CommandType::UPDATE, hostString, port, builtParameters);
         }
 
         if (commandStr == CommandConstants::ADD_COMMAND) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building add request");            
-            return new CommandTransaction(CommandType::ADD, hostString, 4556, builtParameters);
+            return new CommandTransaction(CommandType::ADD, hostString, port, builtParameters);
         
         }
 
         if (commandStr == CommandConstants::GET_COMMAND) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building get request");                
-            return new CommandTransaction(CommandType::GET, hostString, 4556, builtParameters);
+            return new CommandTransaction(CommandType::GET, hostString, port, builtParameters);
         
         }
 
         if (commandStr == CommandConstants::LIST_COMMAND) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building list request");                
-            return new CommandTransaction(CommandType::LIST, hostString, 4556, builtParameters);
+            return new CommandTransaction(CommandType::LIST, hostString, port, builtParameters);
         }
 
         if (commandStr == CommandConstants::NOTIFICATION_COMMAND) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building notification request");                
-            return new CommandTransaction(CommandType::NOTIFICATION, hostString, 4556, builtParameters);
+            return new CommandTransaction(CommandType::NOTIFICATION, hostString, port, builtParameters);
         }
 
     } catch (...) {
@@ -167,7 +178,7 @@ CommandTransaction* CommandProcessor::buildInfoTransactionResponse(std::string h
         );
     } 
 
-    Logger::write(Logger::LogLevel::INFO, "Command Processor : failed to build info resposne. returning null");
+    Logger::write(Logger::LogLevel::INFO, "Command Processor : failed to build info response. returning null");
     return NULL;
 }
 
@@ -220,13 +231,17 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
     //make sure it's actually an add command.
     if (cmd->getCommandType() == CommandType::ADD) {
         try {
-            std::string username = cmd->getParameters().at(CommandConstants::USER_KEY);        
+            std::string username = cmd->getParameters().at(CommandConstants::USER_KEY);  
+            std::string portStr = cmd->getParameters().at(CommandConstants::PORT_KEY);
+
+            int port = atoi(portStr.c_str());
+
             User *newUser = new User(username);
 
             Registration newUserReg(
                 username,
                 cmd->getHost(), 
-                cmd->getPort(),
+                port, 
                 newUser
             );
             //add user to the game and register them.
@@ -236,7 +251,7 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
 
             return buildInfoTransactionResponse(
                 cmd->getHost(),
-                cmd->getPort(),
+                port, 
                 ResponseConstants::SUCCESS_CODE,
                 ResponseConstants::ADD_USER_SUCCESS_MSG,
                 true
@@ -244,6 +259,8 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
             
         } catch (...) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Exception thrown. Failed to add user to game.");
+
+            //this will never be seen by client as port in cmd is invalid for add commands
             return buildInfoTransactionResponse(
                 cmd->getHost(),
                 cmd->getPort(),
@@ -257,6 +274,7 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
         Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to add command.");
     }
 
+    //this will never be seen by client as port in cmd is invalid for add commands
     return buildInfoTransactionResponse(
         cmd->getHost(),
         cmd->getPort(),
@@ -272,14 +290,14 @@ CommandTransaction* CommandProcessor::processGetCommand(CommandTransaction *cmd)
     //make sure it's actually anget command.
     if (cmd->getCommandType() == CommandType::GET) {
         try {
-            std::string username = cmd->getParameters().at(CommandConstants::USER_KEY);        
+            std::string username = cmd->getParameters().at(CommandConstants::GET_USER_KEY);        
             User *foundUser = GameState::getInstance().getUser(username);
             bool regStatus = GameState::getInstance().getUserRegistrationStatus(username);
                         
             if (foundUser != NULL) {
                 std::unordered_map<std::string, std::string> params;
                 params.insert({CommandConstants::STATUS_KEY, CommandConstants::STATUS_SUCCESS});
-                params.insert({CommandConstants::USER_KEY, foundUser->getUsername()});
+                params.insert({CommandConstants::GET_USER_KEY, foundUser->getUsername()});
                 params.insert({CommandConstants::X_KEY, std::to_string(foundUser->getX())});
                 params.insert({CommandConstants::Y_KEY, std::to_string(foundUser->getY())});
                 params.insert({CommandConstants::IS_ACTIVE_KEY, std::to_string(regStatus)});
