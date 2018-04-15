@@ -16,6 +16,8 @@ namespace CommandConstants {
     const std::string ADD_COMMAND = "add";
     const std::string GET_COMMAND = "get";
     const std::string LIST_COMMAND = "list";
+    const std::string INFO_COMMAND = "info";
+    const std::string NOTIFICATION_COMMAND = "talk";
 
 }
 

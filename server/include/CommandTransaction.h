@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include "CommandType.h"
+#include "CommandConstants.h"
 
 using namespace CommandTypes;
 

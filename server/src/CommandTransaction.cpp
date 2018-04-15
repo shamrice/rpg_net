@@ -45,27 +45,27 @@ std::string CommandTransaction::getCommandTypeString() {
 
     switch(commandType) {
         case CommandType::UPDATE:
-            response = "upd";
+            response = CommandConstants::UPDATE_COMMAND;
             break;
         
         case CommandType::ADD:
-            response = "add";
+            response = CommandConstants::ADD_COMMAND;
             break;
 
         case CommandType::GET:
-            response = "get";
+            response = CommandConstants::GET_COMMAND;
             break;
 
         case CommandType::INFO:
-            response = "info";
+            response = CommandConstants::INFO_COMMAND;
             break;
 
         case CommandType::LIST:
-            response = "list";
+            response = CommandConstants::LIST_COMMAND;
             break;
 
-        case CommandType::CHAT:
-            response = "chat";
+        case CommandType::NOTIFICATION:
+            response = CommandConstants::NOTIFICATION_COMMAND;
             break;
     }
 

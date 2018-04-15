@@ -24,6 +24,10 @@ CommandTransaction* CommandProcessor::executeCommand(CommandTransaction *request
         case LIST: {
             response = processListCommand(request);
         } break;
+
+        case NOTIFICATION: {
+            response = processNotificationCommand(request);
+        } break;
     }
 
     if (response == NULL) {
@@ -100,6 +104,11 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
         if (commandStr == CommandConstants::LIST_COMMAND) {
             Logger::write(Logger::LogLevel::INFO, "Command Processor : building list request");                
             return new CommandTransaction(CommandType::LIST, hostString, 4556, builtParameters);
+        }
+
+        if (commandStr == CommandConstants::NOTIFICATION_COMMAND) {
+            Logger::write(Logger::LogLevel::INFO, "Command Processor : building notification request");                
+            return new CommandTransaction(CommandType::NOTIFICATION, hostString, 4556, builtParameters);
         }
 
     } catch (...) {
@@ -446,6 +455,65 @@ CommandTransaction* CommandProcessor::processUpdateCommand(CommandTransaction *c
     } else {
         Logger::write(Logger::LogLevel::ERROR, "Command Processor : Attempted to pass wrong command type to get command.");
     }
+
+    return buildInfoTransactionResponse(
+        cmd->getHost(),
+        cmd->getPort(),
+        ResponseConstants::INVALID_CODE,
+        ResponseConstants::INVALID_MSG,
+        false
+    );
+}
+
+CommandTransaction* CommandProcessor::processNotificationCommand(CommandTransaction *cmd) {
+
+    if (cmd == NULL) {
+        Logger::write(Logger::LogLevel::ERROR, "CommandProcessor : processNotificationCommand received NULL cmd.");
+        return NULL;
+    }
+
+    if (cmd->getCommandType() == CommandType::NOTIFICATION) {
+
+        try {
+            std::string to = cmd->getParameters().at("to");
+            std::string from = cmd->getParameters().at("user");
+            std::string message = cmd->getParameters().at("chatmsg");     
+        
+            Registration *toReg = GameState::getInstance().getRegistration(to);
+
+            //update chat senders last activity time.
+            GameState::getInstance().getRegistration(from)->updateLastActive();
+            
+            //make sure to only send message if user exists in registry.
+            if (toReg != NULL) {
+
+                Notification noteToSend(from, toReg->getUsername(), message);
+                GameState::getInstance().addNotification(noteToSend);
+             
+                Logger::write(Logger::LogLevel::INFO, "Command Processor : Adding notification from " 
+                    + from + " to " + to + " with message " + message);
+
+                return buildInfoTransactionResponse(
+                    cmd->getHost(),
+                    cmd->getPort(),
+                    ResponseConstants::SUCCESS_CODE,
+                    ResponseConstants::NOTIFICATION_SUCCESS_MSG,
+                    true
+                ); 
+            }
+        } catch (std::out_of_range outOfRangeEx) {
+            Logger::write(Logger::LogLevel::ERROR, "Command Processor : Exception thrown. Failed to process notification command "); 
+            std::cerr << "Command Processor : processNotificationCommand : Exception = " << outOfRangeEx.what() << std::endl;
+            
+            return buildInfoTransactionResponse(
+                cmd->getHost(),
+                cmd->getPort(),
+                ResponseConstants::PROCESS_FAILURE_CODE,
+                ResponseConstants::PROCESS_FAILURE_MSG,
+                false
+            );
+        }
+    } 
 
     return buildInfoTransactionResponse(
         cmd->getHost(),

@@ -334,10 +334,10 @@ void* UdpNetworkService::notificationThread() {
 
                 params.insert({"from", nextNotification.getFrom()});
                 params.insert({"to", nextNotification.getTo()});
-                params.insert({"chat_msg", nextNotification.getMessage()});
+                params.insert({"chatmsg", nextNotification.getMessage()});
 
                 CommandTransaction response(
-                    CommandType::CHAT,
+                    CommandType::NOTIFICATION,
                     toUser->getHost(),
                     toUser->getPort(),
                     params

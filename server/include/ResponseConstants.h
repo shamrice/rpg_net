@@ -23,6 +23,7 @@ namespace ResponseConstants {
     const std::string GET_USER_SUCCESS_MSG = "USER_RETREIVED";
     const std::string LIST_USER_SUCCESS_MSG = "USERS_LISTED";
     const std::string UPDATE_USER_SUCCESS_MSG = "USER_UPDATED";
+    const std::string NOTIFICATION_SUCCESS_MSG = "NOTIFICATION_QUEUED";
     const std::string SUCCESS_MSG = "SUCCESS";
 
     //response params

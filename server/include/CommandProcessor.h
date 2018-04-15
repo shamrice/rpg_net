@@ -24,6 +24,7 @@ class CommandProcessor {
         CommandTransaction* processGetCommand(CommandTransaction *cmd);
         CommandTransaction* processListCommand(CommandTransaction *cmd);
         CommandTransaction* processUpdateCommand(CommandTransaction *cmd);
+        CommandTransaction* processNotificationCommand(CommandTransaction *cmd);
         std::unordered_map<std::string, std::string> buildParameters(std::string rawParamString);
                               
         std::string serverKey;        

@@ -15,7 +15,7 @@ namespace CommandTypes {
         UPDATE,
         INFO,
         LIST,
-        CHAT
+        NOTIFICATION
     };
 
 }
