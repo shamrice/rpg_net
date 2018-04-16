@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <iostream>
 #include <chrono>
 #include <ctime>
@@ -19,6 +20,7 @@ class Logger {
         static void write(LogLevel level, std::string message);
 
     private:
+        static void writeToFile(std::string fileDate, std::string logLine);
         static std::string getLogLevelStr(Logger::LogLevel level);        
         static LogType logType;
         static std::mutex logMutex;

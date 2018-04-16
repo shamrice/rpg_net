@@ -219,7 +219,7 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
     while (serviceState.isRunning()) {            
                 
         IPaddress ip;
- 
+        //All users now receive a server message notification when a new user joins the game.
         //wait here until we receive something
         while (serviceState.isRunning() && !SDLNet_UDP_Recv(socket, inputPacket)) 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));     

@@ -36,7 +36,12 @@
 			"tuple": "cpp",
 			"utility": "cpp",
 			"cmath": "cpp",
-			"thread": "cpp"
+			"thread": "cpp",
+			"fstream": "cpp",
+			"iomanip": "cpp",
+			"memory": "cpp",
+			"mutex": "cpp",
+			"sstream": "cpp"
 		}
 	}
 }

@@ -16,11 +16,32 @@ void Logger::write(LogLevel level, std::string message) {
     outputSS << std::put_time(std::localtime(&currentTime), "%F %T") 
              << " : " << getLogLevelStr(level) << " : " << message + "\n";
 
+    std::stringstream dateSS;
+    dateSS << std::put_time(std::localtime(&currentTime), "%F");
+
     switch (logType) {
-        case CONSOLE:            
+        case CONSOLE: {           
             std::cout << outputSS.str();
-            break;
+        } break;
+
+        case FILE: {
+            writeToFile(
+                dateSS.str(),
+                outputSS.str()
+            );
+        } break;
     }    
+}
+
+void Logger::writeToFile(std::string fileDate, std::string logLine) {
+
+    std::ofstream logFile;    
+    logFile.open("./" + fileDate + "-server.log", std::ios_base::app);
+
+    if (logFile) {
+        logFile << logLine;
+        logFile.close();
+    }
 }
 
 void Logger::setLogType(Logger::LogType type) {
