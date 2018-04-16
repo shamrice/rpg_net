@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 #include <unordered_map>
+#include <set>
 #include "CommandConstants.h"
 #include "User.h"
 #include "Logger.h"

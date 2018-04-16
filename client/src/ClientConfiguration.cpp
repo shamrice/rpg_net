@@ -64,6 +64,10 @@ Logger::LogType ClientConfiguration::getLogType() {
     return logType;
 }
 
+std::string ClientConfiguration::getServerKey() {
+    return serverKey;
+}
+
 std::string ClientConfiguration::getServerHost() {
     return serverHost;
 }

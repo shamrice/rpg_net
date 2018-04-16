@@ -4,6 +4,7 @@
 #include <iostream>
 #include <curses.h>
 #include <vector>
+#include <chrono>
 #include "Logger.h"
 #include "UdpClientService.h"
 #include "ClientConfiguration.h"
@@ -25,7 +26,7 @@ class Engine {
         bool isInit;
         bool isRunning;
         User user;
-        std::vector<User> otherUsers;
+        std::unordered_map<std::string, User> otherUsers;
         UdpClientService *clientService;
         ClientConfiguration *clientConfig;
         

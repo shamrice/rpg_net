@@ -12,6 +12,7 @@ class ClientConfiguration {
         ClientConfiguration();
         ClientConfiguration(std::string serverHost, int serverPort, int clientPort);
         bool configure(std::string configFileName);
+        std::string getServerKey();
         std::string getServerHost();
         int getServerPort();
         int getClientPort();

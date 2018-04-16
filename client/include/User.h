@@ -12,6 +12,8 @@ class User {
         void move(int deltaX, int deltaY);
         int getX();
         int getY();
+        void setX(int x);
+        void setY(int y);
     
     private:
         std::string username;

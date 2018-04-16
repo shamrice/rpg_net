@@ -27,3 +27,10 @@ int User::getY() {
     return y;
 }
 
+void User::setX(int x) {
+    this->x = x;
+}
+
+void User::setY(int y) {
+    this->y = y;
+}

@@ -33,6 +33,7 @@ bool Engine::init() {
     //curses configuration
     initscr();
     keypad(stdscr, true);
+    timeout(1);
     cbreak();
     echo();
 
@@ -97,11 +98,17 @@ void Engine::run() {
  
     populateOtherUsers();
 
+    SDL_Event event;
+
     while (isRunning) {
         int c = -1;
         int num = 2;
 
         while (c != 'q') {
+
+            std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+            std::time_t startTime = std::chrono::system_clock::to_time_t(now);
+
             c = getch();
             
             attrset(COLOR_PAIR(MASK_COLOR_PAIR_INDEX));     
@@ -127,21 +134,62 @@ void Engine::run() {
                 + "}{x:" + std::to_string(user.getX())
                 + "}{y:" + std::to_string(user.getY())
                 + "}]");                
-
+            
             attrset(COLOR_PAIR(2)); 
             move(user.getY(), user.getX());
             wprintw(stdscr, "@");  
+
+
+            //mask other users
+            for (auto u : otherUsers) {
+                if (u.first != user.getUsername()) {
+                    attrset(COLOR_PAIR(MASK_COLOR_PAIR_INDEX)); 
+                    move(u.second.getY(), u.second.getX());
+                    wprintw(stdscr, "@");
+                }
+            }
+
+            //update others
+            populateOtherUsers();
+
+            //draw others
+            for (auto u : otherUsers) {
+                if (u.first != user.getUsername()) {
+
+                    attrset(COLOR_PAIR(2)); 
+                    move(u.second.getY(), u.second.getX());
+                    wprintw(stdscr, "@");
+                }
+            }
+
+            now = std::chrono::system_clock::now();
+            std::time_t endTime = std::chrono::system_clock::to_time_t(now);
+
+            /*
+            while (endTime - startTime < 2) {
+                endTime = std::chrono::system_clock::to_time_t(now);
+            }*/
         }
 
-        isRunning = false;
+        isRunning = false;        
     }
     
 }
 
 void Engine::populateOtherUsers() {
 
-    otherUsers = clientService->getUserList("|test|list>[{user:" + user.getUsername() + "}]");
+    std::vector<User> results = clientService->getUserList("|test|list>[{user:" + user.getUsername() + "}]");
+
+    for (User result : results) {
+        
+        if (otherUsers.find(result.getUsername()) != otherUsers.end()) {            
+             otherUsers.at(result.getUsername()).setX(result.getX());
+             otherUsers.at(result.getUsername()).setY(result.getY());
+        } else {
+            otherUsers.insert({result.getUsername(), result});
+        }
+    }
     
-    Logger::write(Logger::LogLevel::INFO, "Successfully retreived user list.");
+    Logger::write(Logger::LogLevel::INFO, "Successfully populated user list.");
     
 }

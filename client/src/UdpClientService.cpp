@@ -263,14 +263,43 @@ std::vector<User> UdpClientService::getUserList(std::string cmd) {
                         paramKeyValuePairString.find(CommandConstants::PARAMETER_KEY_DELIMITER) + 1,
                         paramKeyValuePairString.length()
                     );
+                    
                     resultParams.insert({key, value});
                 }
 
                 //list params to for debug to make sure parsed correctly.
+                //create a set of the usernames from the params
+                std::set<std::string> usernames;
+
                 for (auto p : resultParams) {
-                    Logger::write(Logger::LogLevel::DEBUG, "Command Processor : result key: " 
+                    Logger::write(Logger::LogLevel::DEBUG, "UdpClientService : result key: " 
                         + p.first + " result value: " + p.second);
-                }            
+
+                    if (p.first.find('.') != std::string::npos) {
+                        std::string usernameFound = p.first.substr(0, p.first.find('.'));         
+                        usernames.insert(usernameFound);
+                    }
+                }    
+                
+                //list usernames for debug
+                //and set their coords
+                for (std::string u : usernames) {
+                    Logger::write(Logger::LogLevel::DEBUG, "UdpClientService : Username found: " + u);
+                    
+                    try {
+                        User newUser;
+                        newUser.setUsername(u);
+                        newUser.setX(atoi(resultParams.at(u + ".x").c_str()));
+                        newUser.setY(atoi(resultParams.at(u + ".y").c_str()));
+                        results.push_back(newUser);
+                    } catch (std::out_of_range outOfRangeEx) {
+                        Logger::write(Logger::LogLevel::DEBUG, "UdpClientService : Username found: " 
+                            + u + " Missing user values returned from server. Ignoring user.");
+                        std::cerr << "ERROR: Out of range: " << outOfRangeEx.what() << std::endl;
+                    }
+                    
+                }
+
             } else {
                 Logger::write(Logger::LogLevel::ERROR, "Did not receive the correct response.");    
             }
