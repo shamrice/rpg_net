@@ -13,17 +13,22 @@ Engine::Engine(ClientConfiguration *clientConfig) {
 }
 
 Engine::~Engine() {
-
-    endwin();
+    clientService->shutdown();
+    endwin();    
 }
 
 bool Engine::init() {
+
+
+    Logger::setLogType(clientConfig->getLogType());
 
     clientService = new UdpClientService(
         clientConfig->getServerHost(),
         clientConfig->getServerPort(),
         clientConfig->getClientPort()
     );
+
+    clientService->init();
 
     //curses configuration
     initscr();
@@ -61,6 +66,13 @@ void Engine::start() {
         std::cin >> username;
 
         user.setUsername(username);
+        clientService->sendCommand("|test|add>[{user:" + username + "}{port:" + std::to_string(clientConfig->getClientPort()) + "}]");
+        clientService->sendCommand(
+            "|test|upd>[{user:" 
+            + user.getUsername() 
+            + "}{x:" + std::to_string(user.getX())
+            + "}{y:" + std::to_string(user.getY())
+            + "}]");           
 
         isRunning = true;
         run();
@@ -96,7 +108,14 @@ void Engine::run() {
             }   
             if (c == KEY_UP) {
                 user.move(0, -1);
-            }        
+            }    
+
+            clientService->sendCommand(
+                "|test|upd>[{user:" 
+                + user.getUsername() 
+                + "}{x:" + std::to_string(user.getX())
+                + "}{y:" + std::to_string(user.getY())
+                + "}]");                
 
             attrset(COLOR_PAIR(2)); 
             move(user.getY(), user.getX());
@@ -105,4 +124,5 @@ void Engine::run() {
 
         isRunning = false;
     }
+    
 }

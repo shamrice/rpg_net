@@ -5,7 +5,7 @@
 
 int main(int argc, const char** argv) {
 
-    ClientConfiguration *config = new ClientConfiguration("localhost", 4555, 4556);
+    ClientConfiguration *config = new ClientConfiguration("localhost", 4555, 4557);
     if (!config->configure()) {
         std::cerr << "FATAL ERROR: Unable to configure client. Please check configuration.\n";
         exit(-1);

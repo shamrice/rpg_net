@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <curses.h>
+#include "Logger.h"
 #include "UdpClientService.h"
 #include "ClientConfiguration.h"
 #include "User.h"

@@ -5,7 +5,7 @@ ODIR = "./src"
 OUT_DIR = "./bin"
 
 CFLAGS = -I $(IDIR) -std=gnu++11 -c `sdl-config --cflags`
-OBJ = $(ODIR)/Engine.o $(ODIR)/UdpClientService.o $(ODIR)/ClientConfiguration.o $(ODIR)/User.o $(ODIR)/main.o
+OBJ = $(ODIR)/Engine.o $(ODIR)/UdpClientService.o $(ODIR)/ClientConfiguration.o $(ODIR)/User.o $(ODIR)/Logger.o $(ODIR)/main.o
 
 all: rpg_net_client_make clean_objs
 

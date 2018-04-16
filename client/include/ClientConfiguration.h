@@ -2,6 +2,7 @@
 #define __CLIENT_CONFIGURATION__
 
 #include <string>
+#include "Logger.h"
 
 class ClientConfiguration {
 
@@ -11,8 +12,10 @@ class ClientConfiguration {
         std::string getServerHost();
         int getServerPort();
         int getClientPort();
+        Logger::LogType getLogType();
 
     private:
+        Logger::LogType logType;
         std::string serverHost;
         int serverPort;
         int clientPort;
