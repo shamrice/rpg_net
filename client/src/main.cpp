@@ -5,8 +5,14 @@
 
 int main(int argc, const char** argv) {
 
-    ClientConfiguration *config = new ClientConfiguration("localhost", 4555, 4557);
-    if (!config->configure()) {
+    std::string configFile = "./config/client.conf";
+
+    if (argc == 2) {
+        configFile = argv[1];
+    }
+
+    ClientConfiguration *config = new ClientConfiguration();
+    if (!config->configure(configFile)) {
         std::cerr << "FATAL ERROR: Unable to configure client. Please check configuration.\n";
         exit(-1);
     }

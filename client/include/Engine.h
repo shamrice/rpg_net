@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <curses.h>
+#include <vector>
 #include "Logger.h"
 #include "UdpClientService.h"
 #include "ClientConfiguration.h"
@@ -20,9 +21,11 @@ class Engine {
         void run();
 
     private:
+        void populateOtherUsers();
         bool isInit;
         bool isRunning;
         User user;
+        std::vector<User> otherUsers;
         UdpClientService *clientService;
         ClientConfiguration *clientConfig;
         

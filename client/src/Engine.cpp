@@ -70,10 +70,10 @@ void Engine::start() {
         if (clientService->sendAndWait(
             "|test|add>[{user:" + username + "}{port:" + std::to_string(clientConfig->getClientPort()) + "}]"
         )) {
-            Logger::write(Logger::LogLevel::ERROR, "Successfully added user to game.");
+            Logger::write(Logger::LogLevel::INFO, "Successfully added user to game.");
         
 
-            clientService->sendCommand(
+            clientService->sendAndWait(
                 "|test|upd>[{user:" 
                 + user.getUsername() 
                 + "}{x:" + std::to_string(user.getX())
@@ -94,6 +94,8 @@ void Engine::start() {
  * engine isRunning = false.
  */
 void Engine::run() {
+ 
+    populateOtherUsers();
 
     while (isRunning) {
         int c = -1;
@@ -133,5 +135,13 @@ void Engine::run() {
 
         isRunning = false;
     }
+    
+}
+
+void Engine::populateOtherUsers() {
+
+    otherUsers = clientService->getUserList("|test|list>[{user:" + user.getUsername() + "}]");
+    
+    Logger::write(Logger::LogLevel::INFO, "Successfully retreived user list.");
     
 }
