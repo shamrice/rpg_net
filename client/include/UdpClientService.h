@@ -4,6 +4,7 @@
 #include <string>
 #include <SDL/SDL.h>
 #include <SDL/SDL_net.h>
+#include <thread>
 #include "Logger.h"
 
 class UdpClientService {
@@ -12,7 +13,7 @@ class UdpClientService {
         UdpClientService(std::string serverHost, int serverPort, int clientPort);        
         bool init();
         bool shutdown();
-        //bool sendAndWait(std::string cmd) // send commmand and wait for response.
+        bool sendAndWait(std::string cmd); // send commmand and wait for response.
                                             // these are needed for commands like "add user"
         void sendCommand(std::string cmd);  //send command that the response doesn't matter.
 

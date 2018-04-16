@@ -66,16 +66,25 @@ void Engine::start() {
         std::cin >> username;
 
         user.setUsername(username);
-        clientService->sendCommand("|test|add>[{user:" + username + "}{port:" + std::to_string(clientConfig->getClientPort()) + "}]");
-        clientService->sendCommand(
-            "|test|upd>[{user:" 
-            + user.getUsername() 
-            + "}{x:" + std::to_string(user.getX())
-            + "}{y:" + std::to_string(user.getY())
-            + "}]");           
+        
+        if (clientService->sendAndWait(
+            "|test|add>[{user:" + username + "}{port:" + std::to_string(clientConfig->getClientPort()) + "}]"
+        )) {
+            Logger::write(Logger::LogLevel::ERROR, "Successfully added user to game.");
+        
 
-        isRunning = true;
-        run();
+            clientService->sendCommand(
+                "|test|upd>[{user:" 
+                + user.getUsername() 
+                + "}{x:" + std::to_string(user.getX())
+                + "}{y:" + std::to_string(user.getY())
+                + "}]");           
+
+            isRunning = true;
+            run();
+        } else {
+            Logger::write(Logger::LogLevel::ERROR, "Failed to add user to game.");
+        }
         //TODO : Also spin up network polling thread as well.
     }
 }
