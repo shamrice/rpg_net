@@ -41,7 +41,7 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
      
     const char *host = SDLNet_ResolveIP(&ip);
     Uint32 ipNum = SDL_SwapBE32(ip.host);
-    //Uint16 port = SDL_SwapBE16(ip.port);
+    Uint16 port = SDL_SwapBE16(ip.port);
                 
     std::string dataString(data);  
     std::string hostString(host);     
@@ -79,7 +79,7 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
                     + " cmd: " + commandStr);
 
         //get user's listening port from registration if not an add command.
-        int port = -1;
+        //int port = -1;
         if (commandStr != CommandConstants::ADD_COMMAND) {
             std::string username = builtParameters.at(CommandConstants::USER_KEY);
             Registration *userReg = GameState::getInstance().getRegistration(username);
@@ -246,6 +246,16 @@ CommandTransaction* CommandProcessor::processAddCommand(CommandTransaction *cmd)
             );
             //add user to the game and register them.
             GameState::getInstance().registerUser(newUserReg);
+
+            for (auto regs : GameState::getInstance().getRegistrations()) {
+                
+                GameState::getInstance().addNotification(
+                    Notification(
+                        regs.getUsername(), 
+                        "User " + username + " has been added to the game."
+                    )
+                );
+            }
 
             Logger::write(Logger::LogLevel::INFO, "Command Processor : Added user " + username + " to game.");
 
