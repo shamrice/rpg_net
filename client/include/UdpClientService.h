@@ -12,7 +12,9 @@ class UdpClientService {
         UdpClientService(std::string serverHost, int serverPort, int clientPort);        
         bool init();
         bool shutdown();
-        void sendCommand(std::string cmd);
+        //bool sendAndWait(std::string cmd) // send commmand and wait for response.
+                                            // these are needed for commands like "add user"
+        void sendCommand(std::string cmd);  //send command that the response doesn't matter.
 
     private:
         UDPsocket socket;
