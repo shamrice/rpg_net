@@ -30,10 +30,9 @@ bool Engine::init() {
 
     clientService->init();
 
-    //curses configuration
+    //initial curses configuration
     initscr();
-    keypad(stdscr, true);
-    timeout(1);
+    keypad(stdscr, true);    
     cbreak();
     echo();
 
@@ -62,9 +61,15 @@ bool Engine::init() {
 void Engine::start() {
     if (isInit) {
 
-        std::cout << "Enter username: ";
+        wprintw(stdscr, "Enter username: ");    
+
         std::string username;
-        std::cin >> username;
+        char c = getch();
+
+        while (c != '\n') {
+            username.push_back(c);
+            c = getch();
+        }
 
         user.setUsername(username);
         
@@ -95,10 +100,15 @@ void Engine::start() {
  * engine isRunning = false.
  */
 void Engine::run() {
+
+    //ncurses config for in game.
+    erase();       //clear screen
+    refresh();     //refresh screen
+    timeout(1);    //set input timeout.
+    curs_set(0);   //hide input cursor.
  
     populateOtherUsers();
-
-    SDL_Event event;
+    
 
     while (isRunning) {
         int c = -1;
@@ -138,7 +148,6 @@ void Engine::run() {
             attrset(COLOR_PAIR(2)); 
             move(user.getY(), user.getX());
             wprintw(stdscr, "@");  
-
 
             //mask other users
             for (auto u : otherUsers) {
