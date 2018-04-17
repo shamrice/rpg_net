@@ -115,39 +115,55 @@ void Engine::run() {
         int num = 2;
 
         while (c != 'q') {
-
-            std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-            std::time_t startTime = std::chrono::system_clock::to_time_t(now);
-
-            c = getch();
             
+            bool hasMoved = false;
+
+            //start fps timer
+            __int64_t startms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch()
+            ).count();
+            
+            //get user input
+            c = getch();
+
+            //draw player mask
             attrset(COLOR_PAIR(MASK_COLOR_PAIR_INDEX));     
             move(user.getY(), user.getX());
             wprintw(stdscr, "@");
 
             if (c == KEY_RIGHT) {
+                hasMoved = true;
                 user.move(1, 0);
             } 
             if (c == KEY_LEFT) {
+                hasMoved = true;
                 user.move(-1, 0);
             } 
             if (c == KEY_DOWN) {
+                hasMoved = true;
                 user.move(0, 1);
             }   
             if (c == KEY_UP) {
+                hasMoved = true;
                 user.move(0, -1);
             }    
 
-            clientService->sendCommand(
-                "|test|upd>[{user:" 
-                + user.getUsername() 
-                + "}{x:" + std::to_string(user.getX())
-                + "}{y:" + std::to_string(user.getY())
-                + "}]");                
-            
+
+            //only send update if player moved.
+            if (hasMoved) {
+                clientService->sendCommand(
+                    "|test|upd>[{user:" 
+                    + user.getUsername() 
+                    + "}{x:" + std::to_string(user.getX())
+                    + "}{y:" + std::to_string(user.getY())
+                    + "}]");                
+            }
+
+            //draw player
             attrset(COLOR_PAIR(2)); 
             move(user.getY(), user.getX());
             wprintw(stdscr, "@");  
+            
 
             //mask other users
             for (auto u : otherUsers) {
@@ -171,13 +187,14 @@ void Engine::run() {
                 }
             }
 
-            now = std::chrono::system_clock::now();
-            std::time_t endTime = std::chrono::system_clock::to_time_t(now);
+            //regulate fps to 60
+            __int64_t endms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-            /*
-            while (endTime - startTime < 2) {
-                endTime = std::chrono::system_clock::to_time_t(now);
-            }*/
+            if (endms - startms < 1000 / 60) {
+                int sleepFor = (1000 / 60) - (endms - startms);
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleepFor));
+            }
+       
         }
 
         isRunning = false;        
