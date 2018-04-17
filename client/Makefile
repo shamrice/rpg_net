@@ -10,7 +10,7 @@ OBJ = $(ODIR)/Engine.o $(ODIR)/UdpClientService.o $(ODIR)/ClientConfiguration.o 
 all: rpg_net_client_make clean_objs
 
 rpg_net_client_make: $(OBJ)
-	$(CC) -o $(OUT_DIR)/rpg_net_client $(OBJ) -lncurses -lSDL -lSDL_net $(CLFAGS)
+	$(CC) -o $(OUT_DIR)/rpg_net_client $(OBJ) -lncurses -lSDL -lSDL_net -l pthread $(CLFAGS)
 
 $(ODIR)%.o: ./src/%.cpp 
 	$(CC) -c -o $@ $< $(CFLAGS)

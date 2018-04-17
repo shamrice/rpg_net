@@ -202,14 +202,14 @@ std::vector<User> UdpClientService::getUserList(std::string cmd) {
 
         IPaddress respIp;        
         //wait here until we receive something
-        while (!SDLNet_UDP_Recv(socket, packetIn) && (currentTime - startTime < 10)) {
+        while (!SDLNet_UDP_Recv(socket, packetIn) && (currentTime - startTime < 1)) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));     
 
             now = std::chrono::system_clock::now();
             currentTime = std::chrono::system_clock::to_time_t(now);
         }
 
-        if (currentTime - startTime < 10) {
+        if (currentTime - startTime < 1) {
             
             const char *data_cStr = NULL;
             memcpy(&respIp, &packetIn->address, sizeof(IPaddress));

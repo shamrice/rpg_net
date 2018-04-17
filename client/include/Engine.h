@@ -6,6 +6,7 @@
 #include <vector>
 #include <chrono>
 #include <stdarg.h>
+#include <thread>
 #include "Logger.h"
 #include "UdpClientService.h"
 #include "ClientConfiguration.h"
@@ -17,11 +18,16 @@ const int MAX_FPS = 25;
 class Engine {
 
     public:
+        static void *networkThreadHelper(void *context) {
+            return ((Engine *)context)->networkThread();
+        }
+
         Engine(ClientConfiguration *clientConfig);
         virtual ~Engine();
         bool init();
         void start();
         void run();
+        void* networkThread();
 
     private:
         void populateOtherUsers();
