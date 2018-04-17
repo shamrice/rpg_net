@@ -5,12 +5,14 @@
 #include <curses.h>
 #include <vector>
 #include <chrono>
+#include <stdarg.h>
 #include "Logger.h"
 #include "UdpClientService.h"
 #include "ClientConfiguration.h"
 #include "User.h"
 
 const int MASK_COLOR_PAIR_INDEX = 1;
+const int MAX_FPS = 25; 
 
 class Engine {
 

@@ -187,13 +187,23 @@ void Engine::run() {
                 }
             }
 
-            //regulate fps to 60
+            //regulate fps to value of MAX_FPS in header
             __int64_t endms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-            if (endms - startms < 1000 / 60) {
-                int sleepFor = (1000 / 60) - (endms - startms);
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleepFor));
+            if (endms - startms < 1000 / MAX_FPS) {
+                int sleepFor = (1000 / MAX_FPS) - (endms - startms);
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleepFor));      
             }
+
+            //calculate actual FPS
+            __int64_t actualEnd = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+            __int64_t totalduration = actualEnd - startms;
+            int fps = (1000 /totalduration);
+
+            move(2, 50);
+            va_list args;
+            std::string testString = "FPS: " + std::to_string(fps);
+            vw_printw(stdscr, testString.c_str(), args);          
        
         }
 
