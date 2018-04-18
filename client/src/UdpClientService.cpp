@@ -24,6 +24,7 @@ bool UdpClientService::shutdown() {
         //    SDLNet_FreePacket(*it);
         //}
         SDLNet_FreePacket(packetIn);
+        SDLNet_FreePacket(networkThreadPacketIn);
 
         Logger::write(Logger::LogLevel::INFO, "Exiting SDL_Net.");
         SDLNet_Quit();
@@ -86,6 +87,19 @@ bool UdpClientService::init() {
         //Logger::write(Logger::LogLevel::ERROR, "Command processor is NULL.");
         //exit(-1);
     //}
+
+    if (!(networkThreadPacketOut = SDLNet_AllocPacket(1024))) {
+        Logger::write(Logger::LogLevel::ERROR, SDLNet_GetError());
+        exit(-1);        
+    }
+    Logger::write(Logger::LogLevel::INFO, "Outbound Network Thread UDP packet allocated successfully.");
+
+    if (!(networkThreadPacketIn = SDLNet_AllocPacket(1024))) {
+        Logger::write(Logger::LogLevel::ERROR, SDLNet_GetError());
+        exit(-1);        
+    }
+    Logger::write(Logger::LogLevel::INFO, "Inbound Network Thread UDP packet allocated successfully.");
+
 
     isInit = true;
     //serviceState.setIsRunning(false);
@@ -185,11 +199,11 @@ std::vector<User> UdpClientService::getUserList(std::string cmd) {
         IPaddress ip;
         SDLNet_ResolveHost(&ip, serverHost.c_str(), serverPort);
 
-        packetOut->address = ip;                    
-        packetOut->data = (Uint8*)cmd.c_str();
-        packetOut->len = cmd.size() + 1;
+        networkThreadPacketOut->address = ip;                    
+        networkThreadPacketOut->data = (Uint8*)cmd.c_str();
+        networkThreadPacketOut->len = cmd.size() + 1;
     
-        SDLNet_UDP_Send(socket, -1, packetOut);
+        SDLNet_UDP_Send(socket, -1, networkThreadPacketOut);
 
         Logger::write(Logger::LogLevel::INFO, "UdpClientService : sendCommand : host=" 
             + serverHost + " port=" + std::to_string(serverPort)
@@ -202,7 +216,7 @@ std::vector<User> UdpClientService::getUserList(std::string cmd) {
 
         IPaddress respIp;        
         //wait here until we receive something
-        while (!SDLNet_UDP_Recv(socket, packetIn) && (currentTime - startTime < 1)) {
+        while (!SDLNet_UDP_Recv(socket, networkThreadPacketIn) && (currentTime - startTime < 1)) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));     
 
             now = std::chrono::system_clock::now();
@@ -212,8 +226,8 @@ std::vector<User> UdpClientService::getUserList(std::string cmd) {
         if (currentTime - startTime < 1) {
             
             const char *data_cStr = NULL;
-            memcpy(&respIp, &packetIn->address, sizeof(IPaddress));
-            memcpy(&data_cStr, &packetIn->data, sizeof(packetIn->data));
+            memcpy(&respIp, &networkThreadPacketIn->address, sizeof(IPaddress));
+            memcpy(&data_cStr, &networkThreadPacketIn->data, sizeof(networkThreadPacketIn->data));
         
             const char *host = SDLNet_ResolveIP(&respIp);
             Uint32 ipNum = SDL_SwapBE32(respIp.host);

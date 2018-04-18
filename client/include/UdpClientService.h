@@ -25,8 +25,8 @@ class UdpClientService {
 
     private:
         UDPsocket socket;
-        UDPpacket *packetIn;
-        UDPpacket *packetOut;
+        UDPpacket *packetIn,*networkThreadPacketIn;
+        UDPpacket *packetOut, *networkThreadPacketOut;
         bool isInit;
         std::string serverHost;
         int serverPort;

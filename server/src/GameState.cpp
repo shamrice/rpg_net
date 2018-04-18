@@ -52,7 +52,10 @@ void GameState::registerUser(Registration reg) {
 
 bool GameState::unregisterUser(std::string username) {
     std::lock_guard<std::mutex> guard(addUserMutex);                    
-    registrationMap.erase(username);
+    if (registrationMap.erase(username) >= 1) 
+        return true;  
+        
+    return false;
 }
 
 //get vector of registrations 
