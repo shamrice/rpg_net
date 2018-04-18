@@ -133,9 +133,12 @@ bool ClientConfiguration::configMapSanityCheck() {
         if (configLogType.compare(ConfigurationConstants::LOGTYPE_FILE) == 0) {
             std::cout << "DEBUG : ClientConfiguration : Setting logtype to file.\n";
             logType = Logger::LogType::FILE;
-        } else {
-            std::cout << "DEBUG : ClientConfiguration : Setting logtype to console.\n";
+        } else if (configLogType.compare(ConfigurationConstants::LOGTYPE_CONSOLE) == 0) {
+            std::cout << "DEBUG : ServerConfiguration : Setting logtype to console.\n";
             logType = Logger::LogType::CONSOLE;
+        } else {
+            std::cout << "DEBUG : ServerConfiguration : Setting logtype to none.\n";
+            logType = Logger::LogType::NONE;            
         }
 
         std::cout << "DEBUG : ServerConfiguration : loglevel=" << logLevelStr << ".\n";
@@ -149,7 +152,7 @@ bool ClientConfiguration::configMapSanityCheck() {
         } else {
             std::cout << "DEBUG : ServerConfiguration : Setting loglevel to error.\n";
             logLevel = Logger::LogLevel::ERROR;            
-        }        
+        }  
 
         return true;
 

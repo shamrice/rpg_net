@@ -10,7 +10,7 @@ void Logger::write(LogLevel level, std::string message) {
     //lock method to avoid multiple thread collisions (may remove later...)
     //std::lock_guard<std::mutex> guard(logMutex);                    
 
-    if (level >= Logger::logLevel) {
+    if (level >= Logger::logLevel && Logger::logType != NONE) {
 
         std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
         std::time_t currentTime = std::chrono::system_clock::to_time_t(now);

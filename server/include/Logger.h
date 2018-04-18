@@ -13,7 +13,7 @@
 class Logger {
 
     public:
-        enum LogType { CONSOLE, FILE };
+        enum LogType { CONSOLE, FILE, NONE };
         enum LogLevel { DEBUG, INFO, ERROR };
         
         static void setLogType(LogType type);
