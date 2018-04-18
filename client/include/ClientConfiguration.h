@@ -17,11 +17,13 @@ class ClientConfiguration {
         int getServerPort();
         int getClientPort();
         Logger::LogType getLogType();
+        Logger::LogLevel getLogLevel();
 
     private:
         bool configMapSanityCheck();
         std::unordered_map<std::string, std::string> configMap;
         Logger::LogType logType;
+        Logger::LogLevel logLevel;
         std::string serverKey;
         std::string serverHost;
         int serverPort;

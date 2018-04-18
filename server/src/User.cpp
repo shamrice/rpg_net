@@ -25,3 +25,8 @@ void User::setY(int y) {
 int User::getY() {
     return y;
 }
+
+void User::setXY(int x, int y) {
+    this->x = x;
+    this->y = y;
+}

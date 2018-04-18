@@ -2,35 +2,39 @@
 
 //set default log type to console.
 Logger::LogType Logger::logType = CONSOLE;
+Logger::LogLevel Logger::logLevel = DEBUG;
 std::mutex Logger::logMutex;
 
 void Logger::write(LogLevel level, std::string message) {
 
     //lock method to avoid multiple thread collisions (may remove later...)
-    std::lock_guard<std::mutex> guard(logMutex);                    
+    //std::lock_guard<std::mutex> guard(logMutex);                    
 
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+    if (level >= Logger::logLevel) {
 
-    std::stringstream outputSS;
-    outputSS << std::put_time(std::localtime(&currentTime), "%F %T") 
-             << " : " << getLogLevelStr(level) << " : " << message + "\n";
+        std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+        std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
 
-    std::stringstream dateSS;
-    dateSS << std::put_time(std::localtime(&currentTime), "%F");
+        std::stringstream outputSS;
+        outputSS << std::put_time(std::localtime(&currentTime), "%F %T") 
+                 << " : " << getLogLevelStr(level) << " : " << message + "\n";
 
-    switch (logType) {
-        case CONSOLE: {           
-            std::cout << outputSS.str();
-        } break;
+        std::stringstream dateSS;
+        dateSS << std::put_time(std::localtime(&currentTime), "%F");
 
-        case FILE: {
-            writeToFile(
-                dateSS.str(),
-                outputSS.str()
-            );
-        } break;
-    }    
+        switch (logType) {
+            case CONSOLE: {           
+                std::cout << outputSS.str();
+            } break;
+
+            case FILE: {
+                writeToFile(
+                    dateSS.str(),
+                    outputSS.str()
+                );
+            } break;
+        }  
+    }  
 }
 
 void Logger::writeToFile(std::string fileDate, std::string logLine) {
@@ -46,6 +50,10 @@ void Logger::writeToFile(std::string fileDate, std::string logLine) {
 
 void Logger::setLogType(Logger::LogType type) {
     logType = type;
+}
+
+void Logger::setLogLevel(LogLevel level) {
+    logLevel = level;
 }
 
 std::string Logger::getLogLevelStr(LogLevel level) {

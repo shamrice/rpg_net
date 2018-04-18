@@ -10,6 +10,10 @@ namespace ConfigurationConstants {
     const std::string LOGTYPE = "LOGTYPE";
     const std::string LOGTYPE_FILE = "FILE";
     const std::string LOGTYPE_CONSOLE = "CONSOLE";
+    const std::string LOGLEVEL = "LOGLEVEL";
+    const std::string LOGLEVEL_DEBUG = "DEBUG";
+    const std::string LOGLEVEL_INFO = "INFO";
+    const std::string LOGLEVEL_ERROR = "ERROR";
     const std::string LISTENER_THREADS = "LISTENER_THREADS";
     const std::string MAINTENANCE_THREADS = "MAINTENANCE_THREADS";
     const std::string MAINTENANCE_THREAD_POLLING_INTERVAL = "MAINTENANCE_THREAD_POLLING_INTERVAL";

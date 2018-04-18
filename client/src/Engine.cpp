@@ -21,6 +21,7 @@ bool Engine::init() {
 
 
     Logger::setLogType(clientConfig->getLogType());
+    Logger::setLogLevel(clientConfig->getLogLevel());
 
     clientService = new UdpClientService(
         clientConfig->getServerHost(),

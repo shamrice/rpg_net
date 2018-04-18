@@ -9,6 +9,7 @@ UdpNetworkService::UdpNetworkService(ServerConfiguration *config) {
 
     configuration = config;    
     Logger::setLogType(configuration->getLogType());
+    Logger::setLogLevel(configuration->getLogLevel());
     commandProcessor = new CommandProcessor(configuration->getServerKey());
     isInit = false;
     serviceState.setIsRunning(false);

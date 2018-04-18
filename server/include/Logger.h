@@ -16,13 +16,15 @@ class Logger {
         enum LogType { CONSOLE, FILE };
         enum LogLevel { DEBUG, INFO, ERROR };
         
-        static void setLogType(Logger::LogType type);
+        static void setLogType(LogType type);
+        static void setLogLevel(LogLevel level);
         static void write(LogLevel level, std::string message);
 
     private:
         static void writeToFile(std::string fileDate, std::string logLine);
-        static std::string getLogLevelStr(Logger::LogLevel level);        
+        static std::string getLogLevelStr(LogLevel level);        
         static LogType logType;
+        static LogLevel logLevel;
         static std::mutex logMutex;
 };
 

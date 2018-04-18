@@ -6,14 +6,14 @@
                 "/usr/include",
                 "/usr/local/include",
                 "${workspaceFolder}/include",
-                "${workspaceFolder}"  
+                "${workspaceFolder}"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
             "browse": {
                 "path": [
                     "/usr/include",
-                    "/usr/local/include",                    
+                    "/usr/local/include",
                     "${workspaceFolder}/include",
                     "${workspaceFolder}/src",
                     "${workspaceFolder}"
@@ -37,7 +37,8 @@
                 "/usr/local/include",
                 "/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed",
                 "/usr/include/x86_64-linux-gnu",
-                "/usr/include"
+                "/usr/include",
+                "${workspaceFolder}/include"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",

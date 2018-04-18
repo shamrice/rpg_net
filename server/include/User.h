@@ -12,6 +12,7 @@ class User {
         int getX();
         void setY(int y);
         int getY();
+        void setXY(int x, int y);
     
     private:
         std::string username;

@@ -5,6 +5,7 @@ GameState::GameState() { }
 
 User* GameState::getUser(std::string username) {
     try {
+        std::lock_guard<std::mutex> guard(addUserMutex);                    
         Registration userReg = registrationMap.at(username);
         return userReg.getUser();
     } catch (const std::out_of_range ex) {
@@ -18,6 +19,7 @@ std::vector<User*> GameState::getUsers() {
 
     std::vector<User*> results;
 
+    std::lock_guard<std::mutex> guard(addUserMutex);                    
     for (auto item : registrationMap) {
         results.push_back(item.second.getUser());        
     } 
@@ -27,37 +29,36 @@ std::vector<User*> GameState::getUsers() {
 
 void GameState::updateUser(User *user) {
 
-    //update user if found and values are 
-    //in range.
-    auto it = registrationMap.find(user->getUsername());
-    if (it != registrationMap.end()) {
-        if (user->getX() > 0) {
-            (*it).second.getUser()->setX(user->getX());
-        }
-        if (user->getY() > 0) {
-            (*it).second.getUser()->setY(user->getY());
-        }
+    //update user if found and values are in rnage
 
-        //update last active in registration
-        auto regIt = registrationMap.find((std::string)user->getUsername());
-        if (regIt != registrationMap.end()) {
-            regIt->second.updateLastActive();
+    try {
+        if (user->getX() > 0 && user->getY() > 0) {
+            std::lock_guard<std::mutex> guard(addUserMutex);                    
+            int newX = user->getX();
+            int newY = user->getY();
+            registrationMap.at(user->getUsername()).getUser()->setXY(newX, newY);
+            registrationMap.at(user->getUsername()).updateLastActive();            
         }
+    } catch (std::out_of_range outOfRangeEx) {
+        Logger::write(Logger::LogLevel::ERROR, "Failed to update user. User not found.");        
     }
 }
 
 void GameState::registerUser(Registration reg) {
+    //only one thread can add to an unordered_map at the same time.
+    std::lock_guard<std::mutex> guard(addUserMutex);                    
     registrationMap.emplace(reg.getUsername(), reg);
 }
 
 bool GameState::unregisterUser(std::string username) {
+    std::lock_guard<std::mutex> guard(addUserMutex);                    
     registrationMap.erase(username);
 }
 
 //get vector of registrations 
 std::vector<Registration> GameState::getRegistrations() {
     std::vector<Registration> results;
-
+    std::lock_guard<std::mutex> guard(addUserMutex);                    
     for (auto it : registrationMap) {
         results.push_back(it.second);        
     }
@@ -70,6 +71,7 @@ bool GameState::getUserRegistrationStatus(std::string username) {
     bool active = false;
 
     try {
+        std::lock_guard<std::mutex> guard(addUserMutex);                    
         Registration userFound = registrationMap.at(username);
         active = userFound.isActive();
 
@@ -90,6 +92,7 @@ bool GameState::getUserRegistrationStatus(std::string username) {
 
 Registration* GameState::getRegistration(std::string username) {
     try {
+        std::lock_guard<std::mutex> guard(addUserMutex);                    
         return &registrationMap.at(username);
     } catch (std::out_of_range oorEx) {
          Logger::write(Logger::LogLevel::ERROR, "GameState : Get user registration for " 

@@ -15,6 +15,7 @@ class ServerConfiguration {
         bool configure(std::string configFileName);
         void setLogType(Logger::LogType type);
         Logger::LogType getLogType();
+        Logger::LogLevel getLogLevel();
         std::string getServerKey();
         std::string getHost();
         int getPort();
@@ -29,6 +30,7 @@ class ServerConfiguration {
         bool configMapSanityCheck();
         bool isServerConfigured = false;
         Logger::LogType logType;
+        Logger::LogLevel logLevel;
         std::string serverKey;
         std::string host;
         int port;

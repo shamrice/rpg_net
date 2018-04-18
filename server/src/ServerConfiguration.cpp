@@ -61,6 +61,10 @@ Logger::LogType ServerConfiguration::getLogType() {
     return logType;
 }
 
+Logger::LogLevel ServerConfiguration::getLogLevel() {
+    return logLevel;
+}
+
 std::string ServerConfiguration::getServerKey() {
     return serverKey;
 }
@@ -104,11 +108,12 @@ bool ServerConfiguration::configMapSanityCheck() {
         serverKey = configMap.at(ConfigurationConstants::SERVER_KEY);
         std::string portStr = configMap.at(ConfigurationConstants::PORT);
         std::string configLogType = configMap.at(ConfigurationConstants::LOGTYPE);
+        std::string logLevelStr = configMap.at(ConfigurationConstants::LOGLEVEL);
         std::string listenerThreadCountStr = configMap.at(ConfigurationConstants::LISTENER_THREADS);    
         std::string maintenanceThreadCountStr = configMap.at(ConfigurationConstants::MAINTENANCE_THREADS);
         std::string maintenanceThreadPollingStr = configMap.at(ConfigurationConstants::MAINTENANCE_THREAD_POLLING_INTERVAL);
         std::string notificationThreadPollingStr = configMap.at(ConfigurationConstants::NOTIFICATION_THREAD_POLLING_INTERVAL);
-        std::string inactivityTimeoutStr = configMap.at(ConfigurationConstants::INACTIVITY_TIMEOUT);
+        std::string inactivityTimeoutStr = configMap.at(ConfigurationConstants::INACTIVITY_TIMEOUT);        
 
         if (serverKey.compare("") == 0) {
             std::cerr << "ERROR : ServerConfiguration : Server key missing from configuration... Failure.\n";
@@ -199,6 +204,19 @@ bool ServerConfiguration::configMapSanityCheck() {
         } else {
             std::cout << "DEBUG : ServerConfiguration : Setting logtype to console.\n";
             logType = Logger::LogType::CONSOLE;
+        }
+
+        std::cout << "DEBUG : ServerConfiguration : loglevel=" << logLevelStr << ".\n";
+
+        if (logLevelStr.compare(ConfigurationConstants::LOGLEVEL_DEBUG) == 0) {
+            std::cout << "DEBUG : ServerConfiguration : Setting loglevel to debug.\n";
+            logLevel = Logger::LogLevel::DEBUG;
+        } else if (logLevelStr.compare(ConfigurationConstants::LOGLEVEL_INFO) == 0) {
+            std::cout << "DEBUG : ServerConfiguration : Setting loglevel to info.\n";
+            logLevel = Logger::LogLevel::INFO;
+        } else {
+            std::cout << "DEBUG : ServerConfiguration : Setting loglevel to error.\n";
+            logLevel = Logger::LogLevel::ERROR;            
         }
 
         return true;

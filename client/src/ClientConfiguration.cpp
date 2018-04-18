@@ -64,6 +64,10 @@ Logger::LogType ClientConfiguration::getLogType() {
     return logType;
 }
 
+Logger::LogLevel ClientConfiguration::getLogLevel() {
+    return logLevel;
+}
+
 std::string ClientConfiguration::getServerKey() {
     return serverKey;
 }
@@ -90,7 +94,7 @@ bool ClientConfiguration::configMapSanityCheck() {
         std::string serverPortStr = configMap.at(ConfigurationConstants::SERVER_PORT);
         std::string clientPortStr = configMap.at(ConfigurationConstants::CLIENT_PORT);
         std::string configLogType = configMap.at(ConfigurationConstants::LOGTYPE);
-        
+        std::string logLevelStr = configMap.at(ConfigurationConstants::LOGLEVEL);        
 
         if (serverKey.compare("") == 0) {
             std::cerr << "ERROR : ClientConfiguration : Server key missing from configuration... Failure.\n";
@@ -133,6 +137,19 @@ bool ClientConfiguration::configMapSanityCheck() {
             std::cout << "DEBUG : ClientConfiguration : Setting logtype to console.\n";
             logType = Logger::LogType::CONSOLE;
         }
+
+        std::cout << "DEBUG : ServerConfiguration : loglevel=" << logLevelStr << ".\n";
+
+        if (logLevelStr.compare(ConfigurationConstants::LOGLEVEL_DEBUG) == 0) {
+            std::cout << "DEBUG : ServerConfiguration : Setting loglevel to debug.\n";
+            logLevel = Logger::LogLevel::DEBUG;
+        } else if (logLevelStr.compare(ConfigurationConstants::LOGLEVEL_INFO) == 0) {
+            std::cout << "DEBUG : ServerConfiguration : Setting loglevel to info.\n";
+            logLevel = Logger::LogLevel::INFO;
+        } else {
+            std::cout << "DEBUG : ServerConfiguration : Setting loglevel to error.\n";
+            logLevel = Logger::LogLevel::ERROR;            
+        }        
 
         return true;
 

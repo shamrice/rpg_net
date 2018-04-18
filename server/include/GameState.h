@@ -4,6 +4,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include <mutex>
 #include "Logger.h"
 #include "User.h"
 #include "Registration.h"
@@ -38,6 +39,7 @@ class GameState {
         GameState();     
         std::unordered_map<std::string, Registration> registrationMap;
         std::vector<Notification> notificationQueue;
+        std::mutex addUserMutex;
 };
 
 #endif
