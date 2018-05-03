@@ -136,6 +136,14 @@ void UdpNetworkService::run() {
                     GameState::getInstance().addNotification(noteToSend);
                 }
             }
+
+            //using error log level so it's always displayed
+            if (input == "list") {
+                Logger::write(Logger::LogLevel::ERROR, "Listing currently registered users");
+                for (auto reg : GameState::getInstance().getRegistrations()) {
+                    Logger::write(Logger::LogLevel::ERROR, reg.getUsername());
+                }
+            }
         }
 
         //join all threads back after run stopped.
