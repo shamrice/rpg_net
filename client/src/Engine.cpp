@@ -192,10 +192,10 @@ void Engine::run() {
             __int64_t actualEnd = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
             __int64_t totalduration = actualEnd - startms;
             int fps = (1000 /totalduration);
-
-            move(2, 50);
-            va_list args;
+            
+            va_list args;            
             std::string testString = "FPS: " + std::to_string(fps);
+            move(2, 50);
             vw_printw(stdscr, testString.c_str(), args);                      
        
         }
@@ -210,46 +210,69 @@ void Engine::run() {
  */
 void* Engine::networkThread() {
 
+    std::unordered_map<std::string, User> deltaMap;
+    deltaMap.insert(otherUsers.begin(), otherUsers.end());
+
     while (isRunning) {
 
-        //make copy of old user locations and info
-        std::unordered_map<std::string, User> oldMap;
-        oldMap.insert(otherUsers.begin(), otherUsers.end());
-        
         populateOtherUsers();
 
-        //draw others
-        for (auto u : otherUsers) {
-            if (u.first != user.getUsername()) {
-                
-                //check if user was in old map and was updated.
-                if (oldMap.find(u.first) != oldMap.end()) {
-                    int oldX = oldMap.at(u.first).getX();
-                    int oldY = oldMap.at(u.first).getY();
-                    //if they moved, mask old location
-                    if (oldX != u.second.getX() || oldY != u.second.getY()) {
-                        attrset(COLOR_PAIR(MASK_COLOR_PAIR_INDEX)); 
-                        move(oldY, oldX);
-                        wprintw(stdscr, "@");
+        //if we get a bum result from server, list will be empty. do act on empty lists.
+        if (!otherUsers.empty()) {
 
-                        //print new location
-                        attrset(COLOR_PAIR(2)); 
-                        move(u.second.getY(), u.second.getX());
-                        wprintw(stdscr, "@");
-                    }
-                } else {                    
-                    //new user, print them.
-                    attrset(COLOR_PAIR(2)); 
-                    move(u.second.getY(), u.second.getX());
-                    wprintw(stdscr, "@");
-                    
-                } 
+            for (auto u : otherUsers) {
+                //don't draw if current player
+                if (u.first != user.getUsername()) {
+                    //if we find user, check if we need to draw
+                    if (deltaMap.find(u.first) != deltaMap.end()) {
+                        int maskX = deltaMap.at(u.first).getX();
+                        int maskY = deltaMap.at(u.first).getY();
+                        //if they moved, mask, update delta and draw
+                        if (maskX != u.second.getX() || maskY != u.second.getY()) {
+
+                            attrset(COLOR_PAIR(MASK_COLOR_PAIR_INDEX));
+                            move(maskY, maskX);
+                            wprintw(stdscr, "&");                    
+
+                            deltaMap.at(u.first).setX(u.second.getX());
+                            deltaMap.at(u.first).setY(u.second.getY());
+
+                            attrset(COLOR_PAIR(2));
+                            move(u.second.getY(), u.second.getX());
+                            wprintw(stdscr, "&");
+                        }
+                    } else {
+                        //user does not exist in delta map. insert and they will be drawn next
+                        //iteration.
+                        deltaMap.insert({u.first, u.second});
+                    }                
+                }            
+            }        
+
+            //if user does not exist in current user list but exists in delta. They have left the game.
+            //and should be removed.
+            std::vector<std::string> usersToRemove;
+            for (auto du : deltaMap) {
+                if (otherUsers.find(du.first) == otherUsers.end()) {
+                    usersToRemove.push_back(du.first);
+
+                    //mask user to remove.
+                    attrset(COLOR_PAIR(MASK_COLOR_PAIR_INDEX));
+                    move(du.second.getY(), du.second.getX());
+                    wprintw(stdscr, "&");  
+
+                }
             }
+
+            //remove users.
+            for (auto removeUser : usersToRemove) {
+                deltaMap.erase(removeUser);
+            }
+
         }
 
-        //sleep
-        //std::this_thread::sleep_for(std::chrono::milliseconds(50));
-
+        //make sure we're not still masking next draw in other threads.
+        attrset(COLOR_PAIR(2));
     }
 }
 
@@ -257,18 +280,10 @@ void Engine::populateOtherUsers() {
 
     std::vector<User> results = clientService->getUserList("|test|list>[{user:" + user.getUsername() + "}]");
 
-    otherUsers.clear();
+    otherUsers.clear();   
 
     for (User result : results) {
         otherUsers.insert({result.getUsername(), result});
-        /*
-        if (otherUsers.find(result.getUsername()) != otherUsers.end()) {            
-             otherUsers.at(result.getUsername()).setX(result.getX());
-             otherUsers.at(result.getUsername()).setY(result.getY());
-        } else {
-            otherUsers.insert({result.getUsername(), result});
-        }
-        */
     }
     
     Logger::write(Logger::LogLevel::INFO, "Successfully populated user list.");
