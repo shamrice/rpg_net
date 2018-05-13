@@ -18,6 +18,16 @@
 class UdpNetworkService {
 
     public: 
+        UdpNetworkService(ServerConfiguration *config);
+        ~UdpNetworkService();
+        bool init();
+        void run();  
+        void* eventPollingThread(int threadNum);
+        void* maintenanceThread(int threadNum);
+        void* notificationThread();
+        void testMethod();   
+
+    private:
         static void *eventPollingThreadHelper(void *context, int threadNum) {
             return ((UdpNetworkService *)context)->eventPollingThread(threadNum);
         }
@@ -30,16 +40,6 @@ class UdpNetworkService {
             return ((UdpNetworkService *) context)->notificationThread();
         }
 
-        UdpNetworkService(ServerConfiguration *config);
-        ~UdpNetworkService();
-        bool init();
-        void run();  
-        void* eventPollingThread(int threadNum);
-        void* maintenanceThread(int threadNum);
-        void* notificationThread();
-        void testMethod();   
-
-    private:
         void sendResponse(CommandTransaction *response);
         void logRequest(int sourceThread, IPaddress sourceIp, const char *rawData);
         bool isInit = false;

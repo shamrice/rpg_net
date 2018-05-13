@@ -7,6 +7,8 @@ class ServiceState {
        ServiceState() { isServiceRunning = false; };
        void setIsRunning(bool state);
        bool isRunning();
+       
+    private: 
        bool isServiceRunning;   
 };
 

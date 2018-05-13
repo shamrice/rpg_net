@@ -312,6 +312,11 @@ void* UdpNetworkService::maintenanceThread(int threadNum) {
                         Logger::write(Logger::LogLevel::ERROR, "Thread=" + std::to_string(threadNum) + " Maintenance thread - " 
                             + " Failed to unregister user: " + reg.getUsername());
                     }
+                    /*
+                    *
+                    *  TODO : Put an ELSE here that attempts to send a message to the client
+                    *         letting them know that they have been timed out.
+                    */
                 }
             }
         }

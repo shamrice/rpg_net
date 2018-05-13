@@ -12,6 +12,28 @@
 
 class CommandProcessor {
 
+    /*
+    * TODO: 
+    *   This needs to be refactored. Is potentially becoming a "god" class for all 
+    *   requests. Mutliple ideas:
+    * 
+    *   At very least, all these build methods should be moved into some sort of 
+    *   CommandTransactionBuilder class instead of being part of the processing class.
+    * 
+    *   All the separate private process command methods should be moved into their
+    *   own virtual classes inheriting a base class.
+    * 
+    *   Would like to use syntax something like:
+    *       AddCommandProcessor addCmd = CommandProcessor.get(COMMANDTYPE.ADD); 
+    * 
+    *   Or even better:
+    *       CommandTransaction addReqTrans = CommandTransactionBuilder.build(..params...);
+    *       CommandProcessor<AddCommand> addProcessor(serverKey, addReqTrans);
+    *       CommandTransaction result = addProcessor.executeCommand();
+    *
+    */
+
+
     public:
         CommandProcessor(std::string serverKey);
         CommandTransaction* executeCommand(CommandTransaction *request);

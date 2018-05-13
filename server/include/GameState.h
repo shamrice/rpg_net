@@ -38,6 +38,8 @@ class GameState {
     private:   
         GameState();     
         std::unordered_map<std::string, Registration> registrationMap;
+
+        //TODO : Update this to be a std::queue<Notification> instead of std::vector.
         std::vector<Notification> notificationQueue;
         std::mutex addUserMutex;
 };
