@@ -90,7 +90,9 @@ CommandTransaction* CommandProcessor::buildTransaction(IPaddress ip, const char 
             }
         }
 
-        //execute command        
+        //execute command      
+        // TODO : this is gross code. refactor this.  
+        
         if (commandStr == "exit" || commandStr == "quit") {
             return new CommandTransaction(CommandType::SHUTDOWN, hostString, port, builtParameters);
         }

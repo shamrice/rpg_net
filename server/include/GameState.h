@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <unordered_map>
-#include <vector>
+#include <queue>
 #include <mutex>
 #include "Logger.h"
 #include "User.h"
@@ -38,9 +38,7 @@ class GameState {
     private:   
         GameState();     
         std::unordered_map<std::string, Registration> registrationMap;
-
-        //TODO : Update this to be a std::queue<Notification> instead of std::vector.
-        std::vector<Notification> notificationQueue;
+        std::queue<Notification> notificationQueue;
         std::mutex addUserMutex;
 };
 

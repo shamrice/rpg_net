@@ -106,15 +106,15 @@ Registration* GameState::getRegistration(std::string username) {
 }
 
 //add new notification to the beginning of the queue
-void GameState::addNotification(Notification newNotification) {
-    notificationQueue.insert(notificationQueue.begin(), newNotification);
+void GameState::addNotification(Notification newNotification) {    
+    notificationQueue.push(newNotification);
 }
 
 //get last notification from the queue and remove it.
 Notification GameState::getNextNotification() {
     if (!notificationQueue.empty()) {
-        Notification result = notificationQueue.back();
-        notificationQueue.pop_back();
+        Notification result = notificationQueue.front();
+        notificationQueue.pop();
         return result;
     }
 
