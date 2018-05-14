@@ -10,7 +10,7 @@ UdpNetworkService::UdpNetworkService(ServerConfiguration *config) {
     configuration = config;    
     Logger::setLogType(configuration->getLogType());
     Logger::setLogLevel(configuration->getLogLevel());
-    commandProcessor = new CommandProcessor(configuration->getServerKey());
+    commandProcessor = new CommandProcessor();
     isInit = false;
     serviceState.setIsRunning(false);
 }
@@ -94,6 +94,10 @@ bool UdpNetworkService::init() {
 
     isInit = true;
     serviceState.setIsRunning(false);
+
+    //set server key in gamestate.
+    GameState::getInstance().setServerKey(configuration->getServerKey());
+
     return true;
 }
 
@@ -245,7 +249,8 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
             //log request info
             logRequest(threadNum, ip, data_cStr);
 
-            CommandTransaction *requestTransaction = commandProcessor->buildTransaction(ip, data_cStr);
+            //CommandTransaction *requestTransaction = commandProcessor->buildTransaction(ip, data_cStr);
+            CommandTransaction *requestTransaction = transactionBuilder.buildRequest(ip, data_cStr);
    
             //handle requests coming in
             if (requestTransaction != NULL) {
@@ -272,7 +277,8 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
                 Logger::write(Logger::LogLevel::INFO, "Thread=" 
                             + std::to_string(threadNum) + " Request parsed was null");
                 //send failure message on malformed requests.
-                CommandTransaction *respTrans = commandProcessor->buildInfoTransactionResponse(
+                //CommandTransaction *respTrans = commandProcessor->buildInfoTransactionResponse(
+                CommandTransaction *respTrans = transactionBuilder.buildResponse(
                     ip,
                     ResponseConstants::BAD_REQUEST_CODE,
                     ResponseConstants::BAD_REQUEST_MSG,

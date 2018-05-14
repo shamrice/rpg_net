@@ -3,12 +3,13 @@
 
 #include <SDL/SDL_net.h>
 #include <stdexcept>
-#include "CommandType.h"
-#include "CommandTransaction.h"
 #include "Logger.h"
 #include "GameState.h"
-#include "CommandConstants.h"
-#include "ResponseConstants.h"
+#include "CommandProcessor/CommandType.h"
+#include "CommandProcessor/CommandTransaction.h"
+#include "CommandProcessor/CommandConstants.h"
+#include "CommandProcessor/ResponseConstants.h"
+#include "CommandProcessor/TransactionBuilder.h"
 
 class CommandProcessor {
 
@@ -35,22 +36,16 @@ class CommandProcessor {
 
 
     public:
-        CommandProcessor(std::string serverKey);
         CommandTransaction* executeCommand(CommandTransaction *request);
-        CommandTransaction* buildTransaction(IPaddress ip, const char *data);
-        CommandTransaction* buildInfoTransactionResponse(IPaddress destIp, int statusCode, std::string message, bool isSuccess);
-        CommandTransaction* buildInfoTransactionResponse(std::string host, int port, int statusCode, std::string message, bool isSuccess);
-        CommandTransaction* buildInfoTransactionResponse(std::string host, int port, int statusCode, std::string message, bool isSuccess, std::unordered_map<std::string, std::string> params);
-        
+
     private: 
         CommandTransaction* processAddCommand(CommandTransaction *cmd);
         CommandTransaction* processGetCommand(CommandTransaction *cmd);
         CommandTransaction* processListCommand(CommandTransaction *cmd);
         CommandTransaction* processUpdateCommand(CommandTransaction *cmd);
         CommandTransaction* processNotificationCommand(CommandTransaction *cmd);
-        std::unordered_map<std::string, std::string> buildParameters(std::string rawParamString);
-                              
-        std::string serverKey;        
+
+        TransactionBuilder transactionBuilder;                                   
 };
 
 #endif

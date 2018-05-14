@@ -105,12 +105,12 @@ Registration* GameState::getRegistration(std::string username) {
     return NULL;
 }
 
-//add new notification to the beginning of the queue
+//add new notification to the queue
 void GameState::addNotification(Notification newNotification) {    
     notificationQueue.push(newNotification);
 }
 
-//get last notification from the queue and remove it.
+//get notification from the queue and remove it.
 Notification GameState::getNextNotification() {
     if (!notificationQueue.empty()) {
         Notification result = notificationQueue.front();
@@ -119,4 +119,12 @@ Notification GameState::getNextNotification() {
     }
 
     return Notification({}, {});
+}
+
+void GameState::setServerKey(std::string serverKey) {
+    this->serverKey = serverKey;
+}
+
+std::string GameState::getServerKey() {
+    return serverKey;
 }

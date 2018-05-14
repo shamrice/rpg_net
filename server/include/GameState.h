@@ -35,11 +35,15 @@ class GameState {
         void addNotification(Notification newNotification);
         Notification getNextNotification();
 
+        void setServerKey(std::string serverKey);
+        std::string getServerKey();
+
     private:   
         GameState();     
         std::unordered_map<std::string, Registration> registrationMap;
         std::queue<Notification> notificationQueue;
         std::mutex addUserMutex;
+        std::string serverKey;
 };
 
 #endif

@@ -12,8 +12,9 @@
 #include "ServerConfiguration.h"
 #include "ServiceState.h"
 #include "Logger.h"
-#include "CommandProcessor.h"
-#include "ResponseConstants.h"
+#include "CommandProcessor/CommandProcessor.h"
+#include "CommandProcessor/TransactionBuilder.h"
+#include "CommandProcessor/ResponseConstants.h"
 
 class UdpNetworkService {
 
@@ -47,6 +48,7 @@ class UdpNetworkService {
         ServerConfiguration *configuration;
         ServiceState serviceState;
         CommandProcessor *commandProcessor;
+        TransactionBuilder transactionBuilder;
         UDPsocket socket;
         std::vector<UDPpacket*> inPackets;
         UDPpacket *packetOut;
