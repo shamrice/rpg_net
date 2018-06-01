@@ -248,8 +248,7 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
 
             //log request info
             logRequest(threadNum, ip, data_cStr);
-
-            //CommandTransaction *requestTransaction = commandProcessor->buildTransaction(ip, data_cStr);
+            
             CommandTransaction *requestTransaction = transactionBuilder.buildRequest(ip, data_cStr);
    
             //handle requests coming in

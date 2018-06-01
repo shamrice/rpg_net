@@ -29,9 +29,18 @@ class CommandProcessor {
     * 
     *   Or even better:
     *       CommandTransaction addReqTrans = CommandTransactionBuilder.build(..params...);
-    *       CommandProcessor<AddCommand> addProcessor(serverKey, addReqTrans);
+    *       CommandProcessor<AddCommand> addProcessor(addReqTrans);
     *       CommandTransaction result = addProcessor.executeCommand();
     *
+    * 
+    * 
+    * 
+    * What about having each different processor as a private member variable?
+    * Need to have a UserCommandProcessor, ItemCommandProcessor, EnemyCommandProcessor, etc.
+    * When executeCommand(CommandTransaction) is called, it will get the command class type
+    * (user, item, enemy) to select the correct CommandProcessor and then pass the command
+    * to that command proecessor. The specialized command processor will then execute the
+    * command passed to it.
     */
 
 
