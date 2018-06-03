@@ -16,7 +16,7 @@ $(ODIR)%.o: ./src/%.cpp
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 clean_objs:
-	rm $(ODIR)/*.o $(ODIR)/CommandProcessor/*.o $(ODIR)/CommandProcessor/CommandExecutor/*.o
+	rm $(ODIR)/*.o $(ODIR)/CommandProcessor/*.o $(ODIR)/CommandProcessor/CommandExecutor/*.o $(ODIR)/Core/*.o
 
 clean:
 	rm $(OUT_DIR)/rpg_net $(ODIR)/*.o
