@@ -1,20 +1,17 @@
 #include <iostream>
 #include "UdpNetworkService.h"
 
-#include "CommandProcessor/CommandExecutor/CommandExecutor.h"
-#include <string>
-
 int main(int args, char** argv) {
 
-    CommandExecutor commandExecutor;
-
+/*
     bool boolResult = commandExecutor.get<bool>();    
     bool stringResult = commandExecutor.get<std::string>();    
 
     std::cout << "bool val: " << boolResult;
     std::cout << "\nstring val: " << stringResult;
 
-    User testUser("TestUsername");
+    TODO: Use this method in GameState???
+    User testUser("TestUsername");    
     std::cout << "\nupdate User: " << commandExecutor.update<User>(testUser);
 
    // std::cout << "\ncrash val: " << stringResult;
@@ -22,6 +19,8 @@ int main(int args, char** argv) {
     //UserCommandExecutor.get().test();
 
     return 0;
+    */
+    
 
     std::string configFile = "./config/server.conf";
 

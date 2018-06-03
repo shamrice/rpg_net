@@ -13,7 +13,7 @@ CommandTransaction* TransactionBuilder::buildRequest(IPaddress ip, const char *d
 
     try {
         //build transaction based on request
-        Logger::write(Logger::LogLevel::DEBUG, "Command Processor : Raw Data string: " + dataString);
+        Logger::write(Logger::LogLevel::DEBUG, "TransactionBuilder : Raw Data string: " + dataString);
     
         //verify server key sent is correct
         std::string key = "";
@@ -22,10 +22,10 @@ CommandTransaction* TransactionBuilder::buildRequest(IPaddress ip, const char *d
 
         if (keyPos != std::string::npos) {            
             key = dataString.substr(keyPos, serverKey.length());
-            Logger::write(Logger::LogLevel::DEBUG, "Command Processor : server key=" + key + " keyPos=" + std::to_string(keyPos));
+            Logger::write(Logger::LogLevel::DEBUG, "TransactionBuilder : server key=" + key + " keyPos=" + std::to_string(keyPos));
         }        
         if (key != serverKey) {
-            Logger::write(Logger::LogLevel::ERROR, "Command Processor : Request server key does not match. Key supplied: " 
+            Logger::write(Logger::LogLevel::ERROR, "TransactionBuilder : Request server key does not match. Key supplied: " 
                 + key + ". Returning NULL.");
             return NULL;
         }
@@ -39,7 +39,7 @@ CommandTransaction* TransactionBuilder::buildRequest(IPaddress ip, const char *d
         //get params
         builtParameters = buildParameters(dataString); 
 
-        Logger::write(Logger::LogLevel::DEBUG, "Command Processor : Data string: " + dataString 
+        Logger::write(Logger::LogLevel::DEBUG, "TransactionBuilder : Data string: " + dataString 
                     + " cmd: " + commandStr);
 
         //get user's listening port from registration if not an add command.
@@ -62,39 +62,39 @@ CommandTransaction* TransactionBuilder::buildRequest(IPaddress ip, const char *d
         }
 
         if (commandStr == CommandConstants::UPDATE_COMMAND) {  
-            Logger::write(Logger::LogLevel::INFO, "Command Processor : building update request");          
+            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building update request");          
             return new CommandTransaction(CommandType::UPDATE, hostString, port, builtParameters);
         }
 
         if (commandStr == CommandConstants::ADD_COMMAND) {
-            Logger::write(Logger::LogLevel::INFO, "Command Processor : building add request");            
+            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building add request");            
             return new CommandTransaction(CommandType::ADD, hostString, port, builtParameters);
         
         }
 
         if (commandStr == CommandConstants::GET_COMMAND) {
-            Logger::write(Logger::LogLevel::INFO, "Command Processor : building get request");                
+            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building get request");                
             return new CommandTransaction(CommandType::GET, hostString, port, builtParameters);
         
         }
 
         if (commandStr == CommandConstants::LIST_COMMAND) {
-            Logger::write(Logger::LogLevel::INFO, "Command Processor : building list request");                
+            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building list request");                
             return new CommandTransaction(CommandType::LIST, hostString, port, builtParameters);
         }
 
         if (commandStr == CommandConstants::NOTIFICATION_COMMAND) {
-            Logger::write(Logger::LogLevel::INFO, "Command Processor : building notification request");                
+            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building notification request");                
             return new CommandTransaction(CommandType::NOTIFICATION, hostString, port, builtParameters);
         }
 
     } catch (...) {
-        Logger::write(Logger::LogLevel::INFO, "Command Processor : malformed client request. returning null");
+        Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : malformed client request. returning null");
         return NULL; 
     }
 
     //return null if transaction is invalid.
-    Logger::write(Logger::LogLevel::INFO, "Command Processor : malformed client request. returning null");
+    Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : malformed client request. returning null");
     return NULL;
 }
 
@@ -144,7 +144,7 @@ CommandTransaction* TransactionBuilder::buildResponse(std::string host, int port
         );
     } 
 
-    Logger::write(Logger::LogLevel::INFO, "Command Processor : failed to build info response. returning null");
+    Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : failed to build info response. returning null");
     return NULL;
 }
 
@@ -158,7 +158,7 @@ std::unordered_map<std::string, std::string> TransactionBuilder::buildParameters
     std::size_t endLoc = rawParamString.find(CommandConstants::PARAMETERS_END_DELIMITER); 
     std::string parameters = rawParamString.substr(startLoc + 2, endLoc - startLoc);
 
-    Logger::write(Logger::LogLevel::INFO, "Command Processor : Unprocessed Params: " + parameters);
+    Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : Unprocessed Params: " + parameters);
 
     //iterate through and get each key value pair
     size_t paramPos = 0;
@@ -182,7 +182,7 @@ std::unordered_map<std::string, std::string> TransactionBuilder::buildParameters
 
     //list params to for debug to make sure parsed correctly.
     for (auto p : resultParams) {
-        Logger::write(Logger::LogLevel::DEBUG, "Command Processor : result key: " 
+        Logger::write(Logger::LogLevel::DEBUG, "TransactionBuilder : result key: " 
             + p.first + " result value: " + p.second);
     }
 
