@@ -13,16 +13,16 @@ CommandTransaction* NotificationCommandExecutor::executeNotification() {
             std::string from = cmd->getParameters().at(CommandConstants::USER_KEY);
             std::string message = cmd->getParameters().at(CommandConstants::NOTIFICATION_MESSAGE_KEY);     
         
-            Registration *toReg = GameState::getInstance().getRegistration(to);
+            Registration *toReg = GameState::getInstance().get<Registration>(to);
 
             //update chat senders last activity time.
-            GameState::getInstance().getRegistration(from)->updateLastActive();
+            GameState::getInstance().get<Registration>(from)->updateLastActive();
             
             //make sure to only send message if user exists in registry.
             if (toReg != NULL) {
 
                 Notification noteToSend(from, toReg->getUsername(), message);
-                GameState::getInstance().addNotification(noteToSend);
+                GameState::getInstance().add<Notification>(noteToSend);
              
                 Logger::write(Logger::LogLevel::INFO, "NotificationCommandExecutor : Adding notification from " 
                     + from + " to " + to + " with message " + message);

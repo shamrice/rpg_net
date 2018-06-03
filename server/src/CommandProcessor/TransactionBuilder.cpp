@@ -46,7 +46,7 @@ CommandTransaction* TransactionBuilder::buildRequest(IPaddress ip, const char *d
         //int port = -1;
         if (commandStr != CommandConstants::ADD_COMMAND) {
             std::string username = builtParameters.at(CommandConstants::USER_KEY);
-            Registration *userReg = GameState::getInstance().getRegistration(username);
+            Registration *userReg = GameState::getInstance().get<Registration>(username);
             if (userReg != NULL) {
                 port = userReg->getPort();
             } else {

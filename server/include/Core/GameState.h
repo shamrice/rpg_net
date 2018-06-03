@@ -21,19 +21,13 @@ class GameState {
         GameState(GameState const&) = delete;
         void operator=(GameState const&) = delete;
 
-        void registerUser(Registration reg);
-        bool unregisterUser(std::string username);
-
-        User* getUser(std::string username);  
-        void updateUser(User *user);
-        std::vector<User*> getUsers();
-
-        std::vector<Registration> getRegistrations();
-        Registration* getRegistration(std::string username);
-        bool getUserRegistrationStatus(std::string username);
-
-        void addNotification(Notification newNotification);
-        Notification getNextNotification();
+        template<typename T> void add(T item) { }
+        template<typename T> void update(T *item) { }        
+        template<typename T> T* get(std::string itemName) { }        
+        template<typename T> std::vector<T*> getMany() { }
+        template<typename T> bool getStatus(std::string itemName) { }
+        template<typename T> T getNext() { }        
+        template<typename T> bool remove(std::string itemName) { }            
 
         void setServerKey(std::string serverKey);
         std::string getServerKey();

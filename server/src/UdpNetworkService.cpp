@@ -135,17 +135,17 @@ void UdpNetworkService::run() {
             //DEBUG, send test notification message to all registered users.
             if (input == "send") {
                 Logger::write(Logger::LogLevel::DEBUG, "Sending debug server notification");
-                for (auto reg : GameState::getInstance().getRegistrations()) {
-                    Notification noteToSend(reg.getUsername(), "TEST_SERVER_MESSAGE");
-                    GameState::getInstance().addNotification(noteToSend);
+                for (auto reg : GameState::getInstance().getMany<Registration>()) {
+                    Notification noteToSend(reg->getUsername(), "TEST_SERVER_MESSAGE");
+                    GameState::getInstance().add<Notification>(noteToSend);
                 }
             }
 
             //using error log level so it's always displayed
             if (input == "list") {
                 Logger::write(Logger::LogLevel::ERROR, "Listing currently registered users");
-                for (auto reg : GameState::getInstance().getRegistrations()) {
-                    Logger::write(Logger::LogLevel::ERROR, reg.getUsername());
+                for (auto reg : GameState::getInstance().getMany<Registration>()) {
+                    Logger::write(Logger::LogLevel::ERROR, reg->getUsername());
                 }
             }
         }
@@ -301,21 +301,21 @@ void* UdpNetworkService::maintenanceThread(int threadNum) {
         /*Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
             + std::to_string(threadNum) + " Maintenance Thread checking...");*/
 
-        for (Registration reg : GameState::getInstance().getRegistrations()) {
+        for (Registration *reg : GameState::getInstance().getMany<Registration>()) {
 
             //check if user is currently maked as active in registration
-            if (reg.isActive()) {
+            if (reg != NULL && reg->isActive()) {
                 std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
                 std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
                 
                 //if user hasn't been active since timeout elapsed, remove from game.
-                if (reg.getLastActive() < (currentTime - (configuration->getInactivityTimeout() / 1000))) {
+                if (reg->getLastActive() < (currentTime - (configuration->getInactivityTimeout() / 1000))) {
                     Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
-                        + std::to_string(threadNum) + " Maintenance Thread - User timed out. User: " + reg.getUsername());
+                        + std::to_string(threadNum) + " Maintenance Thread - User timed out. User: " + reg->getUsername());
 
-                    if (!GameState::getInstance().unregisterUser(reg.getUsername())) {
+                    if (!GameState::getInstance().remove<Registration>(reg->getUsername())) {
                         Logger::write(Logger::LogLevel::ERROR, "Thread=" + std::to_string(threadNum) + " Maintenance thread - " 
-                            + " Failed to unregister user: " + reg.getUsername());
+                            + " Failed to unregister user: " + reg->getUsername());
                     }
                     /*
                     *
@@ -338,13 +338,13 @@ void* UdpNetworkService::notificationThread() {
         //TODO : Refactor this!
 
         //get next notification to be sent
-        Notification nextNotification = GameState::getInstance().getNextNotification();
+        Notification nextNotification = GameState::getInstance().getNext<Notification>();
 
         //if there's a message to be sent, send it.
         if (!nextNotification.getMessage().empty() && !nextNotification.getTo().empty()) {
 
             //get to user from user registration
-            Registration *toUser = GameState::getInstance().getRegistration(nextNotification.getTo());
+            Registration *toUser = GameState::getInstance().get<Registration>(nextNotification.getTo());
 
             if (toUser != NULL) {
 

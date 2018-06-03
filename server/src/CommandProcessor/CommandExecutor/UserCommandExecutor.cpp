@@ -22,19 +22,24 @@ CommandTransaction* UserCommandExecutor::executeAdd() {
                 port, 
                 newUser
             );
+
             //add user to the game and register them.
-            GameState::getInstance().registerUser(newUserReg);
+            GameState::getInstance().add<Registration>(newUserReg);
 
-            for (auto regs : GameState::getInstance().getRegistrations()) {
-                
-                GameState::getInstance().addNotification(
-                    Notification(
-                        regs.getUsername(), 
-                        "User " + username + " has been added to the game."
-                    )
-                );
+            for (auto regs : GameState::getInstance().getMany<Registration>()) {
+                if (regs != NULL && regs->getUser() != NULL) {                                        
+                    GameState::getInstance().add<Notification>(
+                        Notification(
+                            regs->getUsername(), 
+                            "User " + username + " has been added to the game."
+                        )
+                    );                
+                } else {
+                    Logger::write(Logger::ERROR, " UserCommandExecutor : Add user + " + username 
+                        + " failed to get registration after adding");
+                }
             }
-
+            
             Logger::write(Logger::LogLevel::INFO, "UserCommandExecutor : Added user " + username + " to game.");
 
             return transactionBuilder.buildResponse(
@@ -80,8 +85,8 @@ CommandTransaction* UserCommandExecutor::executeGet() {
     if (cmd->getCommandType() == CommandType::GET) {
         try {
             std::string username = cmd->getParameters().at(CommandConstants::GET_USER_KEY);        
-            User *foundUser = GameState::getInstance().getUser(username);
-            bool regStatus = GameState::getInstance().getUserRegistrationStatus(username);
+            User *foundUser = GameState::getInstance().get<User>(username);
+            bool regStatus = GameState::getInstance().getStatus<Registration>(username);
                         
             if (foundUser != NULL) {
                 std::unordered_map<std::string, std::string> params;
@@ -144,12 +149,12 @@ CommandTransaction* UserCommandExecutor::executeList() {
     if (cmd->getCommandType() == CommandType::LIST) {
         try {
             
-            std::vector<User*> foundUsers = GameState::getInstance().getUsers();            
+            std::vector<User*> foundUsers = GameState::getInstance().getMany<User>();            
             std::unordered_map<std::string, std::string> params;
 
             for (auto it = foundUsers.begin(); it < foundUsers.end(); ++it) {                                
                 std::string username = (*it)->getUsername();    
-                bool regStatus = GameState::getInstance().getUserRegistrationStatus(username);
+                bool regStatus = GameState::getInstance().getStatus<Registration>(username);
 
                 params.insert({username + "." + CommandConstants::USER_KEY, username});
                 params.insert({username + "." + CommandConstants::X_KEY, std::to_string((*it)->getX())});
@@ -204,7 +209,7 @@ CommandTransaction* UserCommandExecutor::executeUpdate() {
         try {
             std::string username = cmd->getParameters().at(CommandConstants::USER_KEY);              
 
-            bool isActive = GameState::getInstance().getUserRegistrationStatus(username);
+            bool isActive = GameState::getInstance().getStatus<Registration>(username);
 
             if (isActive) {
 
@@ -222,7 +227,7 @@ CommandTransaction* UserCommandExecutor::executeUpdate() {
                 }   
            
                 //update user entry in GameState::getInstance().
-                GameState::getInstance().updateUser(userUpdate);            
+                GameState::getInstance().update<User>(userUpdate);            
                 Logger::write(Logger::LogLevel::INFO, "UserCommandExecutor : Updated user " + username + ".");
 
                 //output params.

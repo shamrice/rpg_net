@@ -15,18 +15,6 @@
 class CommandExecutor {
 
     public:
-
-        /*
-
-            Leaving comment as it can be used possibly in gamestate refactor?
-
-        template<typename T>
-        bool get() {}
-
-        template<typename T> 
-        bool update(T item) { }
-        */
-
         CommandExecutor(CommandTransaction *cmd);
         CommandTransaction* execute();
 
