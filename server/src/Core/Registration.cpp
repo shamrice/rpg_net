@@ -1,4 +1,4 @@
-#include "Registration.h"
+#include "Core/Registration.h"
 
 Registration::Registration(std::string username, std::string host, int port, User *user) {
     this->username = username;

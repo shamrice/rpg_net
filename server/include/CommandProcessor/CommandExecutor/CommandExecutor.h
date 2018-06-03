@@ -4,7 +4,7 @@
 //#include <type_traits>
 #include <string>
 #include "Logger.h"
-#include "GameState.h"
+#include "Core/GameState.h"
 #include "CommandProcessor/CommandType.h"
 #include "CommandProcessor/CommandTransaction.h"
 #include "CommandProcessor/CommandConstants.h"

@@ -1,4 +1,4 @@
-#include "Notification.h"
+#include "Core/Notification.h"
 
 Notification::Notification(std::string to, std::string message) {
     this->from = "SERVER_MSG";

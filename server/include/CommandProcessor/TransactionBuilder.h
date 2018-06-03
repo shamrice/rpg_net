@@ -6,8 +6,8 @@
 #include <SDL/SDL_net.h>
 #include "Logger.h"
 #include "CommandTransaction.h"
-#include "GameState.h"
-#include "Registration.h"
+#include "Core/GameState.h"
+#include "Core/Registration.h"
 
 class TransactionBuilder {
 
