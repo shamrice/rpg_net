@@ -35,16 +35,21 @@ CommandTransaction* TransactionBuilder::buildRequest(IPaddress ip, const char *d
         std::size_t cmdEnd = dataString.find_first_of(CommandConstants::COMMAND_DELIMITER);
         int cmdLength = cmdEnd - cmdStart;
         std::string commandStr = dataString.substr(cmdStart, cmdLength); 
+
+        //split command string to get type and action
+        std::size_t cmdTypeEnd = commandStr.find_first_of(CommandConstants::COMMAND_SPLIT_CHAR);
+        std::string cmdType = commandStr.substr(0, cmdTypeEnd);
+        std::string cmdAction = commandStr.substr(cmdTypeEnd + 1, commandStr.length());
         
         //get params
         builtParameters = buildParameters(dataString); 
 
         Logger::write(Logger::LogLevel::DEBUG, "TransactionBuilder : Data string: " + dataString 
-                    + " cmd: " + commandStr);
+                    + " cmd: " + commandStr + " cmdType: " + cmdType + " cmdAction: " + cmdAction);
 
-        //get user's listening port from registration if not an add command.
+        //get user's listening port from registration if not an add command action.
         //int port = -1;
-        if (commandStr != CommandConstants::ADD_COMMAND) {
+        if (cmdAction != CommandConstants::ADD_COMMAND) {
             std::string username = builtParameters.at(CommandConstants::USER_KEY);
             Registration *userReg = GameState::getInstance().get<Registration>(username);
             if (userReg != NULL) {
@@ -56,37 +61,52 @@ CommandTransaction* TransactionBuilder::buildRequest(IPaddress ip, const char *d
 
         //execute command      
         // TODO : this is gross code. refactor this.  
+
+        CommandType commandType = CommandType::INVALID;
+        CommandAction commandAction = CommandAction::INVALID;
+
+        //set command type
+        if (cmdType == CommandConstants::SYSTEM_COMMAND_TYPE) {
+            commandType = CommandType::SYSTEM;
+        }
+
+        if (cmdType == CommandConstants::USER_COMMAND_TYPE) {
+            commandType = CommandType::USER;
+        }
+
+        if (cmdType == CommandConstants::NOTIFICATION_COMMAND_TYPE) {
+            commandType = CommandType::NOTIFICATION;
+        }
+
+        //set command action
+        if (cmdAction == CommandConstants::ADD_COMMAND) {
+            commandAction = CommandAction::ADD;
+        }
+        if (cmdAction == CommandConstants::GET_COMMAND) {
+            commandAction = CommandAction::GET;
+        }
+        if (cmdAction == CommandConstants::INFO_COMMAND) {
+            commandAction = CommandAction::INFO;
+        }
+        if (cmdAction == CommandConstants::LIST_COMMAND) {
+            commandAction = CommandAction::LIST;
+        }        
+        if (cmdAction == CommandConstants::NOTIFICATION_COMMAND) {
+            commandAction = CommandAction::NOTIFICATION;
+        }
+        if (commandType == CommandType::SYSTEM && (cmdAction == "exit" || cmdAction == "quit")) {
+            commandAction = CommandAction::SHUTDOWN;
+        }
+        if (cmdAction == CommandConstants::UPDATE_COMMAND) {
+            commandAction = CommandAction::UPDATE;
+        }        
         
-        if (commandStr == "exit" || commandStr == "quit") {
-            return new CommandTransaction(CommandType::SHUTDOWN, hostString, port, builtParameters);
+        //return built command if not invalid.
+        if (commandType != CommandType::INVALID && commandAction != CommandAction::INVALID) {
+            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building request"); 
+            return new CommandTransaction(commandType, commandAction, hostString, port, builtParameters);         
         }
 
-        if (commandStr == CommandConstants::UPDATE_COMMAND) {  
-            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building update request");          
-            return new CommandTransaction(CommandType::UPDATE, hostString, port, builtParameters);
-        }
-
-        if (commandStr == CommandConstants::ADD_COMMAND) {
-            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building add request");            
-            return new CommandTransaction(CommandType::ADD, hostString, port, builtParameters);
-        
-        }
-
-        if (commandStr == CommandConstants::GET_COMMAND) {
-            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building get request");                
-            return new CommandTransaction(CommandType::GET, hostString, port, builtParameters);
-        
-        }
-
-        if (commandStr == CommandConstants::LIST_COMMAND) {
-            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building list request");                
-            return new CommandTransaction(CommandType::LIST, hostString, port, builtParameters);
-        }
-
-        if (commandStr == CommandConstants::NOTIFICATION_COMMAND) {
-            Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : building notification request");                
-            return new CommandTransaction(CommandType::NOTIFICATION, hostString, port, builtParameters);
-        }
 
     } catch (...) {
         Logger::write(Logger::LogLevel::INFO, "TransactionBuilder : malformed client request. returning null");
@@ -137,7 +157,8 @@ CommandTransaction* TransactionBuilder::buildResponse(std::string host, int port
         }
 
         return new CommandTransaction(
-            CommandType::INFO,
+            CommandType::NOTIFICATION,
+            CommandAction::INFO,
             host,
             port,
             params

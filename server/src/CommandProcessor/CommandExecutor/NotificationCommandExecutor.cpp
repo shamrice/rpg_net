@@ -6,7 +6,7 @@ CommandTransaction* NotificationCommandExecutor::executeNotification() {
         return NULL;
     }
 
-    if (cmd->getCommandType() == CommandType::NOTIFICATION) {
+    if (cmd->getCommandAction() == CommandAction::INFO) {
 
         try {
             std::string to = cmd->getParameters().at(CommandConstants::NOTIFICATION_TO_KEY);

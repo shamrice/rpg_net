@@ -7,7 +7,7 @@ CommandTransaction* UserCommandExecutor::executeAdd() {
     Logger::write(Logger::LogLevel::INFO, "UserCommandExecutor : Adding new user to game.");    
 
     //make sure it's actually an add command.
-    if (cmd->getCommandType() == CommandType::ADD) {
+    if (cmd->getCommandAction() == CommandAction::ADD) {
         try {
             std::string username = cmd->getParameters().at(CommandConstants::USER_KEY);  
             std::string portStr = cmd->getParameters().at(CommandConstants::PORT_KEY);
@@ -82,7 +82,7 @@ CommandTransaction* UserCommandExecutor::executeGet() {
     Logger::write(Logger::LogLevel::INFO, "UserCommandExecutor : Get user info.");
 
     //make sure it's actually anget command.
-    if (cmd->getCommandType() == CommandType::GET) {
+    if (cmd->getCommandAction() == CommandAction::GET) {
         try {
             std::string username = cmd->getParameters().at(CommandConstants::GET_USER_KEY);        
             User *foundUser = GameState::getInstance().get<User>(username);
@@ -146,7 +146,7 @@ CommandTransaction* UserCommandExecutor::executeList() {
     Logger::write(Logger::LogLevel::INFO, "UserCommandExecutor : list users");
 
     //make sure it's actually a list command.
-    if (cmd->getCommandType() == CommandType::LIST) {
+    if (cmd->getCommandAction() == CommandAction::LIST) {
         try {
             
             std::vector<User*> foundUsers = GameState::getInstance().getMany<User>();            
@@ -205,7 +205,7 @@ CommandTransaction* UserCommandExecutor::executeUpdate() {
     Logger::write(Logger::LogLevel::INFO, "UserCommandExecutor : Update user info.");
 
     //make sure it's actually anget command.
-    if (cmd->getCommandType() == CommandType::UPDATE) {
+    if (cmd->getCommandAction() == CommandAction::UPDATE) {
         try {
             std::string username = cmd->getParameters().at(CommandConstants::USER_KEY);              
 

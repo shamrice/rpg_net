@@ -75,13 +75,13 @@ void Engine::start() {
         user.setUsername(username);
         
         if (clientService->sendAndWait(
-            "|test|add>[{user:" + username + "}{port:" + std::to_string(clientConfig->getClientPort()) + "}]"
+            "|test|user-add>[{user:" + username + "}{port:" + std::to_string(clientConfig->getClientPort()) + "}]"
         )) {
             Logger::write(Logger::LogLevel::INFO, "Successfully added user to game.");
         
 
             clientService->sendAndWait(
-                "|test|upd>[{user:" 
+                "|test|user-upd>[{user:" 
                 + user.getUsername() 
                 + "}{x:" + std::to_string(user.getX())
                 + "}{y:" + std::to_string(user.getY())
@@ -171,7 +171,7 @@ void Engine::run() {
                 wprintw(stdscr, "@"); 
 
                 clientService->sendCommand(
-                    "|test|upd>[{user:" 
+                    "|test|user-upd>[{user:" 
                     + user.getUsername() 
                     + "}{x:" + std::to_string(user.getX())
                     + "}{y:" + std::to_string(user.getY())
@@ -278,7 +278,7 @@ void* Engine::networkThread() {
 
 void Engine::populateOtherUsers() {
 
-    std::vector<User> results = clientService->getUserList("|test|list>[{user:" + user.getUsername() + "}]");
+    std::vector<User> results = clientService->getUserList("|test|user-list>[{user:" + user.getUsername() + "}]");
 
     otherUsers.clear();   
 

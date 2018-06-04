@@ -1,8 +1,9 @@
 #include "CommandProcessor/CommandTransaction.h"
 
-CommandTransaction::CommandTransaction(CommandType type, std::string hostname, 
+CommandTransaction::CommandTransaction(CommandType type, CommandAction action, std::string hostname, 
                                         int portNum, std::unordered_map<std::string, std::string> params) {
     commandType = type;
+    commandAction = action;
     host = hostname;
     port = portNum;
     parameters = params;
@@ -10,6 +11,10 @@ CommandTransaction::CommandTransaction(CommandType type, std::string hostname,
 
 CommandType CommandTransaction::getCommandType() {
     return commandType;
+}
+
+CommandAction CommandTransaction::getCommandAction() {
+    return commandAction;
 }
 
 std::string CommandTransaction::getHost() {
@@ -24,7 +29,8 @@ std::string CommandTransaction::getFormattedResponse() {
 
     std::string respString = "";
 
-    respString += getCommandTypeString() + "<[";
+    respString += getCommandTypeString() + CommandConstants::COMMAND_SPLIT_CHAR
+                    + getCommandActionString() + "<[";
 
     for (auto it = parameters.begin(); it != parameters.end(); ++it) {
         respString += "{" + it->first + ":" + it->second + "}";
@@ -39,33 +45,50 @@ std::unordered_map<std::string, std::string> CommandTransaction::getParameters()
     return parameters;
 }
 
+std::string CommandTransaction::getCommandActionString() {
+    
+    std::string response = "";
+
+    switch(commandAction) {
+        case CommandAction::UPDATE:
+            response = CommandConstants::UPDATE_COMMAND;
+            break;
+        
+        case CommandAction::ADD:
+            response = CommandConstants::ADD_COMMAND;
+            break;
+
+        case CommandAction::GET:
+            response = CommandConstants::GET_COMMAND;
+            break;
+
+        case CommandAction::INFO:
+            response = CommandConstants::INFO_COMMAND;
+            break;
+
+        case CommandAction::LIST:
+            response = CommandConstants::LIST_COMMAND;
+            break;
+    }
+
+    return response;
+}
+
 std::string CommandTransaction::getCommandTypeString() {
     
     std::string response = "";
 
     switch(commandType) {
-        case CommandType::UPDATE:
-            response = CommandConstants::UPDATE_COMMAND;
+        case CommandType::SYSTEM:
+            response = CommandConstants::SYSTEM_COMMAND_TYPE;
             break;
         
-        case CommandType::ADD:
-            response = CommandConstants::ADD_COMMAND;
-            break;
-
-        case CommandType::GET:
-            response = CommandConstants::GET_COMMAND;
-            break;
-
-        case CommandType::INFO:
-            response = CommandConstants::INFO_COMMAND;
-            break;
-
-        case CommandType::LIST:
-            response = CommandConstants::LIST_COMMAND;
+        case CommandType::USER:
+            response = CommandConstants::USER_COMMAND_TYPE;
             break;
 
         case CommandType::NOTIFICATION:
-            response = CommandConstants::NOTIFICATION_COMMAND;
+            response = CommandConstants::NOTIFICATION_COMMAND_TYPE;
             break;
     }
 

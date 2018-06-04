@@ -8,10 +8,7 @@ CommandTransaction* CommandProcessor::executeCommand(CommandTransaction *request
 
         //find appropriate command executor
         switch (request->getCommandType()) {
-            case CommandType::ADD:
-            case CommandType::GET:            
-            case CommandType::LIST:
-            case CommandType::UPDATE:
+            case CommandType::USER:
                 commandExecutor = new UserCommandExecutor(request);
                 break;
             case CommandType::NOTIFICATION:

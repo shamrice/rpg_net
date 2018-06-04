@@ -11,20 +11,20 @@
 
     if (cmd != NULL) {
 
-        switch (cmd->getCommandType()) {
-            case CommandType::ADD: 
+        switch (cmd->getCommandAction()) {
+            case CommandAction::ADD: 
                 response = executeAdd();
                 break;
-            case CommandType::GET:
+            case CommandAction::GET:
                 response = executeGet();
                 break;
-            case CommandType::LIST:
+            case CommandAction::LIST:
                 response = executeList();
                 break;
-            case CommandType::UPDATE:
+            case CommandAction::UPDATE:
                 response = executeUpdate();
                 break;
-            case CommandType::NOTIFICATION:
+            case CommandAction::NOTIFICATION:
                 response = executeNotification();
                 break;
             default:

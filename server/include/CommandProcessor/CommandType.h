@@ -9,13 +9,10 @@
 namespace CommandTypes {
 
     enum CommandType {
-        SHUTDOWN,
-        ADD,
-        GET,
-        UPDATE,
-        INFO,
-        LIST,
-        NOTIFICATION
+        SYSTEM,
+        USER,
+        NOTIFICATION,
+        INVALID
     };
 
 }

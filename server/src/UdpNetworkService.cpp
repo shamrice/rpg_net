@@ -253,7 +253,8 @@ void* UdpNetworkService::eventPollingThread(int threadNum) {
    
             //handle requests coming in
             if (requestTransaction != NULL) {
-                if (requestTransaction->getCommandType() == CommandType::SHUTDOWN) {
+                if (requestTransaction->getCommandType() == CommandType::SYSTEM
+                    && requestTransaction->getCommandAction() == CommandAction::SHUTDOWN) {
                     Logger::write(Logger::LogLevel::INFO, "Thread=" 
                             + std::to_string(threadNum) + " Received quit from client. Shutting down event polling.");
                     serviceState.setIsRunning(false);
@@ -357,6 +358,7 @@ void* UdpNetworkService::notificationThread() {
 
                 CommandTransaction response(
                     CommandType::NOTIFICATION,
+                    CommandAction::INFO,
                     toUser->getHost(),
                     toUser->getPort(),
                     params
