@@ -315,7 +315,18 @@ std::vector<User> UdpClientService::getUserList(std::string cmd) {
                 }
 
             } else {
+                //HACK! This whole send receive needs to be rethought! Currently just forcing
+                //in if we see a disconnect to close client!!!
                 Logger::write(Logger::LogLevel::ERROR, "Did not receive the correct response.");    
+
+                //check to see if response was one for time out and deregistration.
+                std::size_t userRemoved = data.find("USER_REMOVED");
+                std::size_t timeoutStatusCode = data.find("9200");
+                if (userRemoved != std::string::npos && timeoutStatusCode != std::string::npos) {
+                    Logger::write(Logger::LogLevel::INFO, "User has been booted from game due to timeout. Will need to rejoin.");    
+                    exit(-1);
+                }
+              
             }
         }  else {
             Logger::write(Logger::LogLevel::ERROR, "Request timed out waiting for a response");

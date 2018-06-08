@@ -314,15 +314,25 @@ void* UdpNetworkService::maintenanceThread(int threadNum) {
                     Logger::write(Logger::LogLevel::DEBUG, "Thread=" 
                         + std::to_string(threadNum) + " Maintenance Thread - User timed out. User: " + reg->getUsername());
 
-                    if (!GameState::getInstance().remove<Registration>(reg->getUsername())) {
+                    //if success, remove user registration and send message to client
+                    if (GameState::getInstance().remove<Registration>(reg->getUsername())) {
+                        CommandTransaction *deregResp = transactionBuilder.buildResponse(
+                            reg->getHost(),
+                            reg->getPort(),
+                            ResponseConstants::TIME_OUT_CODE,
+                            ResponseConstants::REMOVE_USER_SUCCESS_MSG,
+                            true
+                        );
+                        sendResponse(deregResp);
+                        
+                        Logger::write(Logger::LogLevel::INFO, "Thread=" 
+                            + std::to_string(threadNum) + " Maintenance Thread - User: " + reg->getUsername() 
+                            + " deregistered due to time out and message sent to client.");
+
+                    } else {
                         Logger::write(Logger::LogLevel::ERROR, "Thread=" + std::to_string(threadNum) + " Maintenance thread - " 
                             + " Failed to unregister user: " + reg->getUsername());
                     }
-                    /*
-                    *
-                    *  TODO : Put an ELSE here that attempts to send a message to the client
-                    *         letting them know that they have been timed out.
-                    */
                 }
             }
         }

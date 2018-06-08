@@ -9,6 +9,7 @@ namespace ResponseConstants {
     const int BAD_REQUEST_CODE = 400;
     const int NOT_ACTIVE_CODE = 9000;
     const int NOT_FOUND_CODE = 9100;
+    const int TIME_OUT_CODE = 9200;
     const int INVALID_CODE = 8000;
     const int PROCESS_FAILURE_CODE = 7000;
     const int SUCCESS_CODE = 1000;
@@ -23,6 +24,7 @@ namespace ResponseConstants {
     const std::string GET_USER_SUCCESS_MSG = "USER_RETREIVED";
     const std::string LIST_USER_SUCCESS_MSG = "USERS_LISTED";
     const std::string UPDATE_USER_SUCCESS_MSG = "USER_UPDATED";
+    const std::string REMOVE_USER_SUCCESS_MSG = "USER_REMOVED";
     const std::string NOTIFICATION_SUCCESS_MSG = "NOTIFICATION_QUEUED";
     const std::string SUCCESS_MSG = "SUCCESS";
 

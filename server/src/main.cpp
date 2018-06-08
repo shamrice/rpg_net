@@ -3,25 +3,6 @@
 
 int main(int args, char** argv) {
 
-/*
-    bool boolResult = commandExecutor.get<bool>();    
-    bool stringResult = commandExecutor.get<std::string>();    
-
-    std::cout << "bool val: " << boolResult;
-    std::cout << "\nstring val: " << stringResult;
-
-    TODO: Use this method in GameState???
-    User testUser("TestUsername");    
-    std::cout << "\nupdate User: " << commandExecutor.update<User>(testUser);
-
-   // std::cout << "\ncrash val: " << stringResult;
-
-    //UserCommandExecutor.get().test();
-
-    return 0;
-    */
-    
-
     std::string configFile = "./config/server.conf";
 
     if (args == 2) {
